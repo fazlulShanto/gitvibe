@@ -91,9 +91,9 @@ Provide a clear summary of what this PR accomplishes.
 
 ## Changes Made
 List the specific changes made:
-- 
-- 
-- 
+-
+-
+-
 
 ## Motivation and Context
 Explain why these changes were needed.
@@ -103,6 +103,11 @@ Explain why these changes were needed.
 - [ ] Self-review completed
 - [ ] Tests added/updated as needed
 - [ ] Documentation updated if required`,
+                    chunk_summary: `Summarize the changes in this portion of the git diff:
+
+{diff}
+
+Provide a concise summary of what this chunk of changes does. Focus on the key modifications, additions, or deletions.`,
                     custom: {},
                 },
             },
@@ -110,6 +115,8 @@ Explain why these changes were needed.
                 streaming: true,
                 maxOutputTokens: 500,
                 temperature: 0.7,
+                maxDiffSize: 50000,
+                chunkOverlap: 1000,
             },
             gitHooks: {
                 enabled: false,
@@ -142,6 +149,7 @@ Explain why these changes were needed.
                 await this.save();
                 return this.config;
             }
+            console.log(error);
             Logger.error(
                 `Failed to load configuration: ${(error as Error).message}`
             );
