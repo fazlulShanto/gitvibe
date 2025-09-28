@@ -161,6 +161,18 @@ async function showConfig(options: { json?: boolean }): Promise<void> {
   console.log(`  Commit templates: default, conventional${commitCustomCount > 0 ? `, +${commitCustomCount} custom` : ''}`);
   console.log(`  PR templates: default, detailed${prCustomCount > 0 ? `, +${prCustomCount} custom` : ''}`);
 
+  // Custom models section
+  const customModelCounts = Object.entries(config.providers)
+    .map(([provider, config]) => ({ provider, count: config.customModels?.length || 0 }))
+    .filter(({ count }) => count > 0);
+
+  if (customModelCounts.length > 0) {
+    console.log(chalk.yellow('\n🤖 Custom Models:'));
+    customModelCounts.forEach(({ provider, count }) => {
+      console.log(`  ${provider}: ${count} custom model(s)`);
+    });
+  }
+
   // Analytics section
   console.log(chalk.yellow('\n📊 Analytics:'));
   console.log(`  Enabled: ${config.analytics.enabled ? '✅' : '❌'}`);
@@ -194,6 +206,9 @@ async function setConfig(key: string, value: string, options: { provider?: strin
         config.providers[provider].defaultModel = value;
       } else if (providerKey === 'enabled') {
         config.providers[provider].enabled = value.toLowerCase() === 'true';
+      } else if (providerKey === 'customModels') {
+        // Allow comma-separated list of custom model IDs
+        config.providers[provider].customModels = value.split(',').map(m => m.trim()).filter(Boolean);
       } else {
         throw new Error(`Unknown provider setting: ${providerKey}`);
       }

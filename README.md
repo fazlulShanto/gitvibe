@@ -21,12 +21,12 @@ Generate meaningful commit messages and comprehensive pull request descriptions 
 
 ```bash
 # Install globally
-npm install -g pr-description-cli
+npm install -g gitvibe
 
 # Or with other package managers
-pnpm add -g pr-description-cli
-yarn global add pr-description-cli
-bun install -g pr-description-cli
+pnpm add -g gitvibe
+yarn global add gitvibe
+bun install -g gitvibe
 ```
 
 ### Initial Setup
@@ -182,14 +182,33 @@ providers:
         apiKey: "your-api-key" # Stored securely in system keychain
         defaultModel: "gpt-3.5-turbo"
         enabled: true
+        customModels: ["gpt-4o", "gpt-4o-mini"] # Add new models not in the built-in list
     anthropic:
         apiKey: "your-api-key"
         defaultModel: "claude-3-haiku-20240307"
         enabled: true
+        customModels: []
     google:
         apiKey: "your-api-key"
         defaultModel: "gemini-pro"
         enabled: true
+        customModels: []
+```
+
+#### Dynamic Model Support
+
+The CLI supports using new AI models as soon as they're released by providers, without requiring CLI updates:
+
+-   **Automatic Support**: Any model string is accepted - the AI SDK handles validation
+-   **Custom Models**: Add new models to your config using `customModels` array
+-   **Smart Warnings**: Unknown models trigger warnings with suggestions for similar known models
+
+```bash
+# Add a new model to your config
+gitvibe config set providers.openai.customModels "gpt-4o,gpt-4o-mini,gpt-4-turbo"
+
+# Use the new model immediately
+gitvibe commit --model gpt-4o
 ```
 
 ### Templates

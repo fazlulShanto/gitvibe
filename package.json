@@ -1,5 +1,5 @@
 {
-  "name": "gitvibe-cli",
+  "name": "gitvibe",
   "version": "1.0.0",
   "description": "AI-powered CLI tool for generating commit messages and PR descriptions",
   "main": "dist/index.js",
@@ -22,6 +22,9 @@
     "commit",
     "pr",
     "ai",
+    "github",
+    "commit-message",
+    "pull-request",
     "llm",
     "openai",
     "anthropic",
