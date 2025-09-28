@@ -4,6 +4,7 @@ export const ProviderConfigSchema = z.object({
   apiKey: z.string().optional(),
   defaultModel: z.string(),
   enabled: z.boolean().default(true),
+  customModels: z.array(z.string()).default([]),
 });
 
 export const ProvidersConfigSchema = z.object({

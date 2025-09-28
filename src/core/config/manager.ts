@@ -29,18 +29,22 @@ export class ConfigManager {
                 openai: {
                     defaultModel: "gpt-5-mini",
                     enabled: true,
+                    customModels: [],
                 },
                 anthropic: {
                     defaultModel: "claude-3-7-sonnet-latest",
                     enabled: true,
+                    customModels: [],
                 },
                 google: {
                     defaultModel: "gemini-2.5-flash",
                     enabled: true,
+                    customModels: [],
                 },
                 groq: {
                     defaultModel: "moonshotai/kimi-k2-instruct",
                     enabled: true,
+                    customModels: [],
                 },
             },
             templates: {

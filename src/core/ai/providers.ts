@@ -7,6 +7,7 @@ import { AnthropicMessagesModelId } from '@ai-sdk/anthropic/internal';
 import { OpenAIChatModelId } from '@ai-sdk/openai/internal';
 import { GoogleGenerativeAIModelId } from '@ai-sdk/google/internal';
 import { createGroq} from '@ai-sdk/groq';
+import { Logger } from '../../utils/Logger.js';
 
 
 export interface ProviderInfo {
@@ -81,7 +82,10 @@ export class AIProviderManager {
   }
 
   public getProviderModels(provider: string): string[] {
-    return PROVIDERS[provider]?.models || [];
+    const knownModels = PROVIDERS[provider]?.models || [];
+    const providerConfig = this.config.providers[provider as keyof typeof this.config.providers];
+    const customModels = providerConfig?.customModels || [];
+    return [...knownModels, ...customModels];
   }
 
   public getModel(provider?: string, model?: string): LanguageModel {
@@ -103,9 +107,8 @@ export class AIProviderManager {
       throw new Error(`Unsupported provider: ${selectedProvider}`);
     }
 
-    if (!providerInfo.models.includes(selectedModel)) {
-      throw new Error(`Model ${selectedModel} not available for provider ${selectedProvider}`);
-    }
+    // Allow dynamic or custom models; warn if model not in known list
+    this.validateModel(selectedProvider, selectedModel);
 
     return providerInfo.getModel(providerConfig.apiKey, selectedModel);
   }
@@ -115,7 +118,28 @@ export class AIProviderManager {
   }
 
   public validateModel(provider: string, model: string): boolean {
-    return PROVIDERS[provider]?.models.includes(model) || false;
+    const knownModels = PROVIDERS[provider]?.models || [];
+    const providerConfig = this.config.providers[provider as keyof typeof this.config.providers];
+    const customModels = providerConfig?.customModels || [];
+
+    const isKnown = knownModels.includes(model) || customModels.includes(model);
+
+    if (!isKnown) {
+      Logger.warn(`Using unknown model '${model}' for provider '${provider}'. This may not work if the model doesn't exist.`);
+      // Suggest similar models
+      const similar = this.findSimilarModels(model, knownModels);
+      if (similar.length > 0) {
+        Logger.info(`Did you mean: ${similar.join(', ')}?`);
+      }
+    }
+
+    return true; // Allow any model
+  }
+
+  private findSimilarModels(target: string, models: string[]): string[] {
+    return models
+      .filter(m => m.includes(target) || target.includes(m))
+      .slice(0, 3);
   }
 
   public getProviderInfo(provider: string): ProviderInfo | undefined {
