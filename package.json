@@ -33,7 +33,9 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^2.0.20",
     "@ai-sdk/google": "^2.0.17",
+    "@ai-sdk/groq": "^2.0.22",
     "@ai-sdk/openai": "^2.0.38",
+    "@ai-sdk/xai": "^2.0.23",
     "ai": "^5.0.56",
     "chalk": "^5.3.0",
     "commander": "^11.1.0",

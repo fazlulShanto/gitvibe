@@ -38,7 +38,7 @@ export class AIGenerator {
     const prompt = this.buildPrompt(template, { diff: gitDiff });
     
     const model = this.providerManager.getModel(options.provider, options.model);
-    const maxOutputTokens = options.maxOutputTokens || this.config.options.maxTokens;
+    const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
     try {

@@ -7,7 +7,7 @@ export default defineConfig({
   target: 'ES2020',
   format: ['cjs'],
   sourcemap: true,
-  onSuccess: 'echo "Build complete"',
+  onSuccess: 'node bin/gitvibe config show',
   clean: true,
   logLevel: 'error',
   external: ['keytar', 'simple-git'],

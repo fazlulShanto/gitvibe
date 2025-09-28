@@ -79,7 +79,7 @@ describe('ConfigManager', () => {
           commit: { default: 'test template' },
           pr: { default: 'test pr template' }
         },
-        options: { streaming: true, maxTokens: 500, temperature: 0.7 },
+        options: { streaming: true, maxOutputTokens: 500, temperature: 0.7 },
         gitHooks: { enabled: false, commitMsg: false, preCommit: false },
         analytics: { enabled: true, anonymous: true }
       }
@@ -177,7 +177,7 @@ describe('ConfigManager', () => {
 
       await configManager.update({
         defaultProvider: 'google',
-        options: { streaming: false, maxTokens: 1000, temperature: 0.5 }
+        options: { streaming: false, maxOutputTokens: 1000, temperature: 0.5 }
       })
 
       const config = await configManager.get()

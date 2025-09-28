@@ -6,10 +6,12 @@ import { CLIConfig } from '../config/schema.js';
 import { AnthropicMessagesModelId } from '@ai-sdk/anthropic/internal';
 import { OpenAIChatModelId } from '@ai-sdk/openai/internal';
 import { GoogleGenerativeAIModelId } from '@ai-sdk/google/internal';
+import { createGroq} from '@ai-sdk/groq';
+
 
 export interface ProviderInfo {
   name: string;
-  models: AnthropicMessagesModelId[] | OpenAIChatModelId[] | GoogleGenerativeAIModelId[];
+  models: AnthropicMessagesModelId[] | OpenAIChatModelId[] | GoogleGenerativeAIModelId[] ;
   getModel: (apiKey: string, model: string) => LanguageModel;
 }
 
@@ -50,6 +52,18 @@ export const PROVIDERS: Record<string, ProviderInfo> = {
       return googleProvider(model);
     },
   },
+  groq :{
+    name: 'Groq',
+    models: [
+      'moonshotai/kimi-k2-instruct',
+      'moonshotai/kimi-k2-instruct-0905',
+      'deepseek-r1-distill-llama-70b'
+    ],
+    getModel: (apiKey: string, model: string) => {
+      const getGroqProvider = createGroq({ apiKey });
+      return getGroqProvider(model);
+    }
+  }
 };
 
 export class AIProviderManager {
