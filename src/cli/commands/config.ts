@@ -133,10 +133,11 @@ async function showConfig(options: { json?: boolean }): Promise<void> {
   // Providers section
   console.log(chalk.yellow('🤖 AI Providers:'));
   console.log(`  Default: ${chalk.cyan(config.defaultProvider)}`);
-  
+
   for (const [key, provider] of Object.entries(config.providers)) {
-    const status = provider.enabled && provider.apiKey ? '✅' : '❌';
-    const keyStatus = provider.apiKey ? '🔑' : '🚫';
+    const hasApiKey = await configManager.hasApiKey(key);
+    const status = provider.enabled && hasApiKey ? '✅' : '❌';
+    const keyStatus = hasApiKey ? '🔑' : '🚫';
     console.log(`  ${status} ${chalk.cyan(key)}: ${provider.defaultModel} ${keyStatus}`);
   }
 
@@ -188,8 +189,6 @@ async function setConfig(key: string, value: string, options: { provider?: strin
   // Parse the key and value
   const keyParts = key.split('.');
 
-  console.log('✅ ✅ ✅',{keyParts,options});
-  
   try {
     if (options.provider && keyParts[0] === 'providers') {
       // Provider-specific setting
@@ -197,11 +196,14 @@ async function setConfig(key: string, value: string, options: { provider?: strin
       if (!config.providers[provider]) {
         throw new Error(`Unknown provider: ${provider}`);
       }
-      
-      const providerKey = keyParts[1] as keyof typeof config.providers[typeof provider];
-      
+
+      const providerKey = keyParts[1];
+
       if (providerKey === 'apiKey') {
-        config.providers[provider].apiKey = value;
+        // Store API key in keychain instead of config
+        await configManager.setApiKey(provider, value);
+        Logger.success(`API key stored securely for provider: ${provider}`);
+        return; // Don't save config for API keys
       } else if (providerKey === 'defaultModel') {
         config.providers[provider].defaultModel = value;
       } else if (providerKey === 'enabled') {
@@ -269,16 +271,28 @@ async function getConfig(key: string, options: { provider?: string }): Promise<v
   const config = await configManager.load();
 
   const keyParts = key.split('.');
-  
+
   if (options.provider && keyParts[0] === 'providers') {
     const provider = options.provider as keyof typeof config.providers;
     if (!config.providers[provider]) {
       throw new Error(`Unknown provider: ${provider}`);
     }
-    
-    const providerKey = keyParts[1] as keyof typeof config.providers[typeof provider];
-    const value = config.providers[provider][providerKey];
-    console.log(value);
+
+    const providerKey = keyParts[1];
+
+    if (providerKey === 'apiKey') {
+      // Get API key from keychain
+      const apiKey = await configManager.getApiKey(provider);
+      if (apiKey) {
+        console.log(apiKey);
+      } else {
+        console.log('No API key stored for this provider');
+      }
+    } else {
+      const providerConfig = config.providers[provider];
+      const value = providerConfig[providerKey as keyof typeof providerConfig];
+      console.log(value);
+    }
   } else {
     // Navigate through the config object
     let value: any = config;
@@ -388,10 +402,14 @@ async function validateConfig(): Promise<void> {
   const issues: string[] = [];
 
   // Check providers
-  const enabledProviders = Object.keys(config.providers).filter(key => {
+  const enabledProviders = [];
+  for (const key of Object.keys(config.providers)) {
     const provider = config.providers[key as keyof typeof config.providers];
-    return provider?.enabled && provider?.apiKey;
-  });
+    const hasApiKey = await configManager.hasApiKey(key);
+    if (provider?.enabled && hasApiKey) {
+      enabledProviders.push(key);
+    }
+  }
 
   if (enabledProviders.length === 0) {
     issues.push('❌ No enabled providers with API keys');

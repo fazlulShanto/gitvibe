@@ -86,7 +86,7 @@ export class AIGenerator {
     const template = this.getTemplate('commit', options.template);
     const prompt = this.buildPrompt(template, { diff: gitDiff });
 
-    const model = this.providerManager.getModel(options.provider, options.model);
+    const model = await this.providerManager.getModel(options.provider, options.model);
     const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
@@ -123,7 +123,7 @@ export class AIGenerator {
     const template = this.getTemplate('commit', options.template);
     const prompt = this.buildPrompt(template, { diff: gitDiff });
 
-    const model = this.providerManager.getModel(options.provider, options.model);
+    const model = await this.providerManager.getModel(options.provider, options.model);
     const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
@@ -179,7 +179,7 @@ ${combinedSummaries}
 
 Please create a cohesive PR description that covers all the changes mentioned in the summaries.`;
 
-    const model = this.providerManager.getModel(options.provider, options.model);
+    const model = await this.providerManager.getModel(options.provider, options.model);
     const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
@@ -206,7 +206,7 @@ Please create a cohesive PR description that covers all the changes mentioned in
     const template = this.getTemplate('pr', options.template);
     const prompt = this.buildPrompt(template, { diff: gitDiff });
 
-    const model = this.providerManager.getModel(options.provider, options.model);
+    const model = await this.providerManager.getModel(options.provider, options.model);
     const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
@@ -244,7 +244,7 @@ Please create a cohesive PR description that covers all the changes mentioned in
     const template = this.getTemplate('pr', options.template);
     const prompt = this.buildPrompt(template, { diff: gitDiff });
 
-    const model = this.providerManager.getModel(options.provider, options.model);
+    const model = await this.providerManager.getModel(options.provider, options.model);
     const maxOutputTokens = options.maxOutputTokens || this.config.options.maxOutputTokens;
     const temperature = options.temperature || this.config.options.temperature;
 
@@ -299,7 +299,7 @@ Please create a cohesive PR description that covers all the changes mentioned in
 
   public async testConnection(provider?: string, model?: string): Promise<boolean> {
     try {
-      const testModel = this.providerManager.getModel(provider, model);
+      const testModel = await this.providerManager.getModel(provider, model);
       await generateText({
         model: testModel,
         prompt: 'Hello',

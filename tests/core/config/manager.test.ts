@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ConfigManager } from '../../../src/core/config/manager'
 import { promises as fs } from 'fs'
-import path from 'path'
+import * as path from 'path'
 import os from 'os'
+import keytar from 'keytar'
 
 vi.mock('fs', () => ({
   promises: {
@@ -35,6 +36,14 @@ vi.mock('yaml', () => ({
   stringify: vi.fn(),
 }))
 
+vi.mock('keytar', () => ({
+  default: {
+    setPassword: vi.fn(),
+    getPassword: vi.fn(),
+    deletePassword: vi.fn(),
+  }
+}))
+
 describe('ConfigManager', () => {
   let configManager: ConfigManager
 
@@ -43,6 +52,8 @@ describe('ConfigManager', () => {
     // Reset singleton instance
     ;(ConfigManager as any).instance = null
     configManager = ConfigManager.getInstance()
+    // Mock getConfigPath to return a fixed path
+    vi.spyOn(configManager, 'getConfigPath').mockReturnValue('/mock/config/path')
   })
 
   describe('getInstance', () => {
@@ -215,6 +226,67 @@ describe('ConfigManager', () => {
 
       const exists = await configManager.exists()
       expect(exists).toBe(false)
+    })
+  })
+
+  describe('getApiKey', () => {
+    it('should return API key from keychain', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.getPassword.mockResolvedValueOnce('test-api-key')
+
+      const apiKey = await configManager.getApiKey('openai')
+      expect(apiKey).toBe('test-api-key')
+      expect(mockKeytar.getPassword).toHaveBeenCalledWith('pr-description-cli', 'openai')
+    })
+
+    it('should return null if API key not found', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.getPassword.mockResolvedValueOnce(null)
+
+      const apiKey = await configManager.getApiKey('openai')
+      expect(apiKey).toBeNull()
+      expect(mockKeytar.getPassword).toHaveBeenCalledWith('pr-description-cli', 'openai')
+    })
+  })
+
+  describe('setApiKey', () => {
+    it('should store API key in keychain', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.setPassword.mockResolvedValueOnce(undefined)
+
+      await configManager.setApiKey('openai', 'test-api-key')
+      expect(mockKeytar.setPassword).toHaveBeenCalledWith('pr-description-cli', 'openai', 'test-api-key')
+    })
+  })
+
+  describe('deleteApiKey', () => {
+    it('should delete API key from keychain', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.deletePassword.mockResolvedValueOnce(true)
+
+      const result = await configManager.deleteApiKey('openai')
+      expect(result).toBe(true)
+      expect(mockKeytar.deletePassword).toHaveBeenCalledWith('pr-description-cli', 'openai')
+    })
+  })
+
+  describe('hasApiKey', () => {
+    it('should return true if API key exists', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.getPassword.mockResolvedValueOnce('test-api-key')
+
+      const hasKey = await configManager.hasApiKey('openai')
+      expect(hasKey).toBe(true)
+      expect(mockKeytar.getPassword).toHaveBeenCalledWith('pr-description-cli', 'openai')
+    })
+
+    it('should return false if API key does not exist', async () => {
+      const mockKeytar = vi.mocked(keytar)
+      mockKeytar.getPassword.mockResolvedValueOnce(null)
+
+      const hasKey = await configManager.hasApiKey('openai')
+      expect(hasKey).toBe(false)
+      expect(mockKeytar.getPassword).toHaveBeenCalledWith('pr-description-cli', 'openai')
     })
   })
 })

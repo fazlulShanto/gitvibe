@@ -3,6 +3,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import type { LanguageModel } from 'ai';
 import { CLIConfig } from '../config/schema.js';
+import { ConfigManager } from '../config/manager.js';
 import { AnthropicMessagesModelId } from '@ai-sdk/anthropic/internal';
 import { OpenAIChatModelId } from '@ai-sdk/openai/internal';
 import { GoogleGenerativeAIModelId } from '@ai-sdk/google/internal';
@@ -69,15 +70,17 @@ export const PROVIDERS: Record<string, ProviderInfo> = {
 
 export class AIProviderManager {
   private config: CLIConfig;
+  private configManager: ConfigManager;
 
   constructor(config: CLIConfig) {
     this.config = config;
+    this.configManager = ConfigManager.getInstance();
   }
 
   public getAvailableProviders(): string[] {
     return Object.keys(PROVIDERS).filter(provider => {
       const providerConfig = this.config.providers[provider as keyof typeof this.config.providers];
-      return providerConfig?.enabled && providerConfig?.apiKey;
+      return providerConfig?.enabled ?? false;
     });
   }
 
@@ -88,21 +91,22 @@ export class AIProviderManager {
     return [...knownModels, ...customModels];
   }
 
-  public getModel(provider?: string, model?: string): LanguageModel {
+  public async getModel(provider?: string, model?: string): Promise<LanguageModel> {
     const selectedProvider = provider || this.config.defaultProvider;
     const providerConfig = this.config.providers[selectedProvider as keyof typeof this.config.providers];
-    
-    if (!providerConfig?.apiKey) {
-      throw new Error(`API key not found for provider: ${selectedProvider}`);
+
+    if (!providerConfig?.enabled) {
+      throw new Error(`Provider ${selectedProvider} is disabled`);
     }
 
-    if (!providerConfig.enabled) {
-      throw new Error(`Provider ${selectedProvider} is disabled`);
+    const apiKey = await this.configManager.getApiKey(selectedProvider);
+    if (!apiKey) {
+      throw new Error(`API key not found for provider: ${selectedProvider}`);
     }
 
     const selectedModel = model || providerConfig.defaultModel;
     const providerInfo = PROVIDERS[selectedProvider];
-    
+
     if (!providerInfo) {
       throw new Error(`Unsupported provider: ${selectedProvider}`);
     }
@@ -110,7 +114,7 @@ export class AIProviderManager {
     // Allow dynamic or custom models; warn if model not in known list
     this.validateModel(selectedProvider, selectedModel);
 
-    return providerInfo.getModel(providerConfig.apiKey, selectedModel);
+    return providerInfo.getModel(apiKey, selectedModel);
   }
 
   public validateProvider(provider: string): boolean {
@@ -150,9 +154,13 @@ export class AIProviderManager {
     return PROVIDERS;
   }
 
-  public isProviderConfigured(provider: string): boolean {
+  public async isProviderConfigured(provider: string): Promise<boolean> {
     const providerConfig = this.config.providers[provider as keyof typeof this.config.providers];
-    return !!(providerConfig?.apiKey && providerConfig?.enabled);
+    if (!providerConfig?.enabled) {
+      return false;
+    }
+    const hasApiKey = await this.configManager.hasApiKey(provider);
+    return hasApiKey;
   }
 
   public getConfiguredProviders(): string[] {

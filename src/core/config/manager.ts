@@ -2,6 +2,7 @@ import * as fs from "fs/promises";
 import * as path from "path";
 import * as os from "os";
 import * as yaml from "yaml";
+import keytar from "keytar";
 import { CLIConfig, CLIConfigSchema } from "./schema.js";
 import { Logger } from "../../utils/Logger.js";
 
@@ -136,9 +137,12 @@ Provide a concise summary of what this chunk of changes does. Focus on the key m
         }
 
         try {
-
-          const configData = await fs.readFile(this.configPath, "utf-8");
+            const configData = await fs.readFile(this.configPath, "utf-8");
             const parsedConfig = yaml.parse(configData);
+
+            // Migrate any existing plain-text API keys to keychain
+            await this.migrateApiKeys(parsedConfig);
+
             this.config = CLIConfigSchema.parse(parsedConfig);
             Logger.info("Configuration loaded successfully");
             return this.config;
@@ -217,6 +221,73 @@ Provide a concise summary of what this chunk of changes does. Focus on the key m
             return true;
         } catch {
             return false;
+        }
+    }
+
+    public async getApiKey(provider: string): Promise<string | null> {
+        try {
+            const key = await keytar.getPassword("pr-description-cli", provider);
+            return key;
+        } catch (error) {
+            Logger.error(`Failed to retrieve API key for ${provider}: ${(error as Error).message}`);
+            return null;
+        }
+    }
+
+    public async setApiKey(provider: string, apiKey: string): Promise<void> {
+        try {
+            await keytar.setPassword("pr-description-cli", provider, apiKey);
+            Logger.info(`API key stored securely for ${provider}`);
+        } catch (error) {
+            Logger.error(`Failed to store API key for ${provider}: ${(error as Error).message}`);
+            throw error;
+        }
+    }
+
+    public async deleteApiKey(provider: string): Promise<boolean> {
+        try {
+            const deleted = await keytar.deletePassword("pr-description-cli", provider);
+            if (deleted) {
+                Logger.info(`API key deleted for ${provider}`);
+            }
+            return deleted;
+        } catch (error) {
+            Logger.error(`Failed to delete API key for ${provider}: ${(error as Error).message}`);
+            return false;
+        }
+    }
+
+    public async hasApiKey(provider: string): Promise<boolean> {
+        const key = await this.getApiKey(provider);
+        return key !== null;
+    }
+
+    private async migrateApiKeys(parsedConfig: any): Promise<void> {
+        if (!parsedConfig.providers) {
+            return;
+        }
+
+        const providers = ['openai', 'anthropic', 'google', 'groq'];
+        let hasMigrations = false;
+
+        for (const provider of providers) {
+            if (parsedConfig.providers[provider]?.apiKey) {
+                const apiKey = parsedConfig.providers[provider].apiKey;
+                try {
+                    await this.setApiKey(provider, apiKey);
+                    delete parsedConfig.providers[provider].apiKey;
+                    hasMigrations = true;
+                    Logger.info(`Migrated API key for ${provider} to keychain`);
+                } catch (error) {
+                    Logger.error(`Failed to migrate API key for ${provider}: ${(error as Error).message}`);
+                }
+            }
+        }
+
+        if (hasMigrations) {
+            // Save the updated config without API keys
+            await this.save();
+            Logger.info("Configuration updated after API key migration");
         }
     }
 }
