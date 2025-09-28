@@ -150,7 +150,7 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
   // Configure additional options
   console.log(chalk.blue('\n⚙️ Additional Configuration...'));
   
-  const { streaming, maxTokens, temperature } = await inquirer.prompt([
+  const { streaming, maxOutputTokens, temperature } = await inquirer.prompt([
     {
       type: 'confirm',
       name: 'streaming',
@@ -159,9 +159,9 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
     },
     {
       type: 'number',
-      name: 'maxTokens',
+      name: 'maxOutputTokens',
       message: 'Maximum tokens per response:',
-      default: config.options.maxTokens,
+      default: config.options.maxOutputTokens,
       validate: (input) => input > 0 && input <= 4000 || 'Please enter a value between 1 and 4000',
     },
     {
@@ -173,7 +173,7 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
     },
   ]);
 
-  config.options = { streaming, maxTokens, temperature };
+  config.options = { streaming, maxOutputTokens, temperature };
 
   // Git hooks configuration
   const { enableHooks } = await inquirer.prompt([{

@@ -143,7 +143,7 @@ async function showConfig(options: { json?: boolean }): Promise<void> {
   // Options section
   console.log(chalk.yellow('\n⚙️ Options:'));
   console.log(`  Streaming: ${config.options.streaming ? '✅' : '❌'}`);
-  console.log(`  Max tokens: ${chalk.cyan(config.options.maxTokens)}`);
+  console.log(`  Max tokens: ${chalk.cyan(config.options.maxOutputTokens)}`);
   console.log(`  Temperature: ${chalk.cyan(config.options.temperature)}`);
 
   // Git hooks section
@@ -175,6 +175,8 @@ async function setConfig(key: string, value: string, options: { provider?: strin
 
   // Parse the key and value
   const keyParts = key.split('.');
+
+  console.log('✅ ✅ ✅',{keyParts,options});
   
   try {
     if (options.provider && keyParts[0] === 'providers') {
@@ -209,12 +211,12 @@ async function setConfig(key: string, value: string, options: { provider?: strin
           config.options.streaming = value.toLowerCase() === 'true';
           break;
           
-        case 'options.maxTokens':
-          const maxTokens = parseInt(value);
-          if (isNaN(maxTokens) || maxTokens <= 0) {
+        case 'options.maxOutputTokens':
+          const maxOutputTokens = parseInt(value);
+          if (isNaN(maxOutputTokens) || maxOutputTokens <= 0) {
             throw new Error('Max tokens must be a positive number');
           }
-          config.options.maxTokens = maxTokens;
+          config.options.maxOutputTokens = maxOutputTokens;
           break;
           
         case 'options.temperature':
@@ -242,6 +244,7 @@ async function setConfig(key: string, value: string, options: { provider?: strin
     Logger.success(`Configuration updated: ${key} = ${value}`);
     
   } catch (error) {
+    console.error('❌ ❌ ❌',error);
     throw new Error(`Invalid value for ${key}: ${(error as Error).message}`);
   }
 }
@@ -400,8 +403,8 @@ async function validateConfig(): Promise<void> {
   }
 
   // Check configuration values
-  if (config.options.maxTokens <= 0 || config.options.maxTokens > 4000) {
-    issues.push('❌ Invalid maxTokens value');
+  if (config.options.maxOutputTokens <= 0 || config.options.maxOutputTokens > 4000) {
+    issues.push('❌ Invalid maxOutputTokens value');
     isValid = false;
   }
 

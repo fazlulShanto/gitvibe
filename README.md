@@ -237,7 +237,7 @@ templates:
 ```yaml
 options:
     streaming: true # Enable streaming responses
-    maxTokens: 500 # Maximum tokens per response
+    maxOutputTokens: 500 # Maximum tokens per response
     temperature: 0.7 # AI creativity (0.0-2.0)
 ```
 

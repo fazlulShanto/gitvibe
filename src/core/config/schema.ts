@@ -8,13 +8,16 @@ export const ProviderConfigSchema = z.object({
 
 export const ProvidersConfigSchema = z.object({
   openai: ProviderConfigSchema.extend({
-    defaultModel: z.string().default('gpt-3.5-turbo'),
+    defaultModel: z.string().default('gpt-5-mini'),
   }),
   anthropic: ProviderConfigSchema.extend({
-    defaultModel: z.string().default('claude-3-haiku-20240307'),
+    defaultModel: z.string().default('claude-3-7-sonnet-latest',),
   }),
   google: ProviderConfigSchema.extend({
-    defaultModel: z.string().default('gemini-pro'),
+    defaultModel: z.string().default('gemini-2.5-flash'),
+  }),
+  groq: ProviderConfigSchema.extend({
+    defaultModel: z.string().default('moonshotai/kimi-k2-instruct'),
   }),
 });
 
@@ -33,7 +36,7 @@ export const TemplatesConfigSchema = z.object({
 
 export const OptionsConfigSchema = z.object({
   streaming: z.boolean().default(true),
-  maxTokens: z.number().default(500),
+  maxOutputTokens: z.number().default(500),
   temperature: z.number().min(0).max(2).default(0.7),
 });
 
@@ -45,7 +48,7 @@ export const GitHooksConfigSchema = z.object({
 
 export const CLIConfigSchema = z.object({
   version: z.string().default('1.0.0'),
-  defaultProvider: z.enum(['openai', 'anthropic', 'google']).default('openai'),
+  defaultProvider: z.enum(['openai', 'anthropic', 'google','groq']).default('groq'),
   providers: ProvidersConfigSchema,
   templates: TemplatesConfigSchema,
   options: OptionsConfigSchema,
