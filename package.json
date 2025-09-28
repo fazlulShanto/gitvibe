@@ -1,22 +1,21 @@
 {
-  "name": "gitvibe",
+  "name": "gitvibe-monorepo",
   "version": "1.0.0",
-  "description": "AI-powered CLI tool for generating commit messages and PR descriptions",
-  "main": "dist/index.js",
-  "bin": {
-    "gitvibe": "bin/gitvibe"
-  },
+  "description": "AI-powered monorepo for GitVibe tools (CLI, Web GUI, Server)",
+  "private": true,
   "scripts": {
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage",
-    "dev": "tsdown -w",
-    "build": "tsdown",
-    "start": "node dist/index.js",
-    "prepublishOnly": "pnpm run build"
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "test:run": "turbo test:run",
+    "check-types": "turbo check-types",
+    "clean": "turbo clean",
+    "cli": "pnpm --filter @gitvibe/cli",
+    "web": "pnpm --filter @gitvibe/web-gui",
+    "server": "pnpm --filter @gitvibe/server"
   },
   "keywords": [
+    "monorepo",
     "cli",
     "git",
     "commit",
@@ -28,36 +27,16 @@
     "llm",
     "openai",
     "anthropic",
-    "google"
+    "google",
+    "react",
+    "web",
+    "server"
   ],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.12.1",
-  "dependencies": {
-    "@ai-sdk/anthropic": "^2.0.20",
-    "@ai-sdk/google": "^2.0.17",
-    "@ai-sdk/groq": "^2.0.22",
-    "@ai-sdk/openai": "^2.0.38",
-    "@ai-sdk/xai": "^2.0.23",
-    "ai": "^5.0.56",
-    "chalk": "^5.3.0",
-    "commander": "^11.1.0",
-    "inquirer": "^9.2.12",
-    "keytar": "^7.9.0",
-    "ora": "^7.0.1",
-    "simple-git": "^3.20.0",
-    "yaml": "^2.3.4",
-    "zod": "^3.22.4"
-  },
   "devDependencies": {
-    "@types/inquirer": "^9.0.7",
-    "@types/node": "^20.10.0",
-    "@vitest/coverage-v8": "^1.3.1",
-    "@vitest/ui": "^1.3.1",
-    "jsdom": "^23.2.0",
-    "tsdown": "^0.15.5",
-    "typescript": "^5.9.2",
-    "vitest": "^1.3.1"
+    "turbo": "^2.5.8"
   },
   "engines": {
     "node": ">=20.19.0"

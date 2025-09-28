@@ -1,2 +1,5 @@
 onlyBuiltDependencies:
-  - keytar
+    - keytar
+packages:
+    - "apps/*"
+    - "packages/*"

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { ConfigManager } from '../../../src/core/config/manager'
+import { ConfigManager } from '../../src/config/manager'
 import { promises as fs } from 'fs'
 import * as path from 'path'
 import os from 'os'
@@ -27,8 +27,10 @@ vi.mock('path', () => ({
 }))
 
 vi.mock('os', () => ({
-  homedir: vi.fn(() => '/home/test'),
-  platform: vi.fn(() => 'linux'),
+  default: {
+    homedir: vi.fn(() => '/home/test'),
+    platform: vi.fn(() => 'linux'),
+  }
 }))
 
 vi.mock('yaml', () => ({
@@ -188,7 +190,7 @@ describe('ConfigManager', () => {
 
       await configManager.update({
         defaultProvider: 'google',
-        options: { streaming: false, maxOutputTokens: 1000, temperature: 0.5 }
+        options: { streaming: false, maxOutputTokens: 1000, temperature: 0.5, maxDiffSize: 50000, chunkOverlap: 1000 }
       })
 
       const config = await configManager.get()

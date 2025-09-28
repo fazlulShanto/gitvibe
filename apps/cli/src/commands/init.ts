@@ -2,10 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
-import { ConfigManager } from '../../core/config/manager.js';
-import { PROVIDERS } from '../../core/ai/providers.js';
-import { Logger } from '../../utils/Logger.js';
-import { AIGenerator } from '../../core/ai/generator.js';
+import { ConfigManager, PROVIDERS, Logger, AIGenerator } from '@gitvibe/core';
 
 export function registerInitCommand(program: Command): void {
   program
@@ -83,7 +80,7 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
       name: 'model',
       message: `Select default model for ${PROVIDERS[provider].name}:`,
       choices: PROVIDERS[provider].models,
-      default: config.providers[provider as keyof typeof config.providers]?.defaultModel,
+      default: config.providers?.[provider as keyof typeof config.providers]?.defaultModel,
     }]);
 
     // Store API key in keychain
@@ -91,6 +88,7 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
 
     // Update configuration (without apiKey)
     const providerKey = provider as keyof typeof config.providers;
+    config.providers = config.providers || {};
     config.providers[providerKey] = {
       ...config.providers[providerKey],
       defaultModel: model,
@@ -115,19 +113,22 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
         }]);
         
         if (!continueAnyway) {
+          config.providers = config.providers || {};
           config.providers[providerKey].enabled = false;
         }
       }
     } catch (error) {
       spinner.fail(`${PROVIDERS[provider].name} connection failed: ${(error as Error).message}`);
+      config.providers = config.providers || {};
       config.providers[providerKey].enabled = false;
     }
   }
 
   // Set default provider
-  const enabledProviders = selectedProviders.filter(p => 
-    config.providers[p as keyof typeof config.providers]?.enabled
-  );
+  const enabledProviders = selectedProviders.filter(p => {
+    const providers = config.providers || {};
+    return providers[p as keyof typeof providers]?.enabled;
+  });
 
   if (enabledProviders.length === 0) {
     throw new Error('No providers are enabled. Please check your API keys and try again.');
@@ -152,39 +153,40 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
   // Configure additional options
   console.log(chalk.blue('\n⚙️ Additional Configuration...'));
 
+  const configOptions = config.options || {};
   const { streaming, maxOutputTokens, temperature, maxDiffSize, chunkOverlap } = await inquirer.prompt([
     {
       type: 'confirm',
       name: 'streaming',
       message: 'Enable streaming responses for better user experience?',
-      default: config.options.streaming,
+      default: configOptions.streaming,
     },
     {
       type: 'number',
       name: 'maxOutputTokens',
       message: 'Maximum tokens per response:',
-      default: config.options.maxOutputTokens,
+      default: configOptions.maxOutputTokens,
       validate: (input) => input > 0 && input <= 4000 || 'Please enter a value between 1 and 4000',
     },
     {
       type: 'number',
       name: 'temperature',
       message: 'Temperature (creativity) - 0.0 to 2.0:',
-      default: config.options.temperature,
+      default: configOptions.temperature,
       validate: (input) => input >= 0 && input <= 2 || 'Please enter a value between 0.0 and 2.0',
     },
     {
       type: 'number',
       name: 'maxDiffSize',
       message: 'Maximum diff size in characters before chunking:',
-      default: config.options.maxDiffSize,
+      default: configOptions.maxDiffSize,
       validate: (input) => input > 0 || 'Please enter a positive number',
     },
     {
       type: 'number',
       name: 'chunkOverlap',
       message: 'Overlap between chunks in characters:',
-      default: config.options.chunkOverlap,
+      default: configOptions.chunkOverlap,
       validate: (input) => input >= 0 || 'Please enter a non-negative number',
     },
   ]);
@@ -218,13 +220,15 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
   }
 
   // Analytics
+  const analytics = config.analytics || {};
   const { enableAnalytics } = await inquirer.prompt([{
     type: 'confirm',
     name: 'enableAnalytics',
     message: 'Enable anonymous usage analytics to help improve the tool?',
-    default: config.analytics.enabled,
+    default: analytics.enabled,
   }]);
 
+  config.analytics = config.analytics || {};
   config.analytics.enabled = enableAnalytics;
 
   // Save configuration
@@ -238,7 +242,8 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
   }
 
   // Install Git hooks if enabled
-  if (config.gitHooks.enabled) {
+  const gitHooks = config.gitHooks || {};
+  if (gitHooks.enabled) {
     const { installHooksNow } = await inquirer.prompt([{
       type: 'confirm',
       name: 'installHooksNow',
@@ -254,20 +259,21 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
   }
 
   // Success message
+  const finalGitHooks = config.gitHooks || {};
   console.log(chalk.green(`
   ✅ Setup completed successfully!
-  
+
   Your configuration:
-  • Default provider: ${PROVIDERS[config.defaultProvider].name}
+  • Default provider: ${PROVIDERS[config.defaultProvider || 'groq'].name}
   • Enabled providers: ${enabledProviders.map(p => PROVIDERS[p].name).join(', ')}
-  • Streaming: ${config.options.streaming ? 'enabled' : 'disabled'}
-  • Git hooks: ${config.gitHooks.enabled ? 'enabled' : 'disabled'}
-  
+  • Streaming: ${config.options?.streaming ? 'enabled' : 'disabled'}
+  • Git hooks: ${finalGitHooks.enabled ? 'enabled' : 'disabled'}
+
   Quick start:
   • ${chalk.cyan('gitvibe commit')} - Generate commit message
   • ${chalk.cyan('gitvibe pr')} - Generate PR description
   • ${chalk.cyan('gitvibe config')} - Manage configuration
-  
+
   Happy coding! 🎉
   `));
 }

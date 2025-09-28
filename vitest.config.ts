@@ -4,14 +4,20 @@ export default defineConfig({
   test: {
     environment: 'node',
     globals: true,
-    setupFiles: ['./tests/setup.ts'],
-    include: ['tests/**/*.test.ts'],
+    setupFiles: ['./packages/core/tests/setup.ts'],
+    include: [
+      'packages/*/tests/**/*.test.ts',
+      'apps/*/tests/**/*.test.ts',
+      'tests/**/*.test.ts'
+    ],
     exclude: ['node_modules', 'dist'],
     coverage: {
       reporter: ['text', 'json', 'html'],
       exclude: [
         'node_modules/',
         'dist/',
+        'packages/*/tests/',
+        'apps/*/tests/',
         'tests/',
         'bin/',
         '**/*.d.ts',

@@ -4,9 +4,7 @@ import chalk from 'chalk';
 import ora from 'ora';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import { ConfigManager } from '../../core/config/manager.js';
-import { GitAnalyzer } from '../../core/git/analyzer.js';
-import { Logger } from '../../utils/Logger.js';
+import { ConfigManager, GitAnalyzer, Logger } from '@gitvibe/core';
 
 export function registerHooksCommand(program: Command): void {
   const hooksCmd = program
@@ -109,15 +107,15 @@ async function installHooks(options: HookOptions): Promise<void> {
       name: 'selectedHooks',
       message: 'Which hooks would you like to install?',
       choices: [
-        { 
-          name: 'prepare-commit-msg (automatically generate commit messages)', 
+        {
+          name: 'prepare-commit-msg (automatically generate commit messages)',
           value: 'commitMsg',
-          checked: config.gitHooks.commitMsg 
+          checked: config.gitHooks?.commitMsg
         },
-        { 
-          name: 'pre-commit (validate changes before commit)', 
+        {
+          name: 'pre-commit (validate changes before commit)',
           value: 'preCommit',
-          checked: config.gitHooks.preCommit 
+          checked: config.gitHooks?.preCommit
         },
       ],
       validate: (input) => input.length > 0 || 'Please select at least one hook',
@@ -130,16 +128,19 @@ async function installHooks(options: HookOptions): Promise<void> {
   // Install commit-msg hook
   if (installCommitMsg) {
     await installCommitMsgHook(hooksDir, options.force);
+    config.gitHooks = config.gitHooks || {};
     config.gitHooks.commitMsg = true;
   }
 
   // Install pre-commit hook
   if (installPreCommit) {
     await installPreCommitHook(hooksDir, options.force);
+    config.gitHooks = config.gitHooks || {};
     config.gitHooks.preCommit = true;
   }
 
   // Update configuration
+  config.gitHooks = config.gitHooks || {};
   config.gitHooks.enabled = true;
   await configManager.update(config);
 
@@ -329,6 +330,7 @@ async function uninstallHooks(options: HookOptions): Promise<void> {
         Logger.success(`Removed ${hook} hook`);
         
         // Update config
+        config.gitHooks = config.gitHooks || {};
         if (hook === 'prepare-commit-msg') {
           config.gitHooks.commitMsg = false;
         } else if (hook === 'pre-commit') {
@@ -347,6 +349,7 @@ async function uninstallHooks(options: HookOptions): Promise<void> {
   }
 
   // Update configuration
+  config.gitHooks = config.gitHooks || {};
   const hasAnyHooks = config.gitHooks.commitMsg || config.gitHooks.preCommit;
   config.gitHooks.enabled = hasAnyHooks;
   await configManager.update(config);
@@ -370,9 +373,10 @@ async function showHooksStatus(): Promise<void> {
 
   // Check configuration
   console.log(chalk.yellow('Configuration:'));
-  console.log(`  Hooks enabled: ${config.gitHooks.enabled ? '✅' : '❌'}`);
-  console.log(`  Commit message hook: ${config.gitHooks.commitMsg ? '✅' : '❌'}`);
-  console.log(`  Pre-commit hook: ${config.gitHooks.preCommit ? '✅' : '❌'}`);
+  const gitHooks = config.gitHooks || {};
+  console.log(`  Hooks enabled: ${gitHooks.enabled ? '✅' : '❌'}`);
+  console.log(`  Commit message hook: ${gitHooks.commitMsg ? '✅' : '❌'}`);
+  console.log(`  Pre-commit hook: ${gitHooks.preCommit ? '✅' : '❌'}`);
 
   // Check actual hook files
   console.log(chalk.yellow('\nInstalled hooks:'));
@@ -434,18 +438,34 @@ async function testHooks(): Promise<void> {
   try {
     const configManager = ConfigManager.getInstance();
     const config = await configManager.load();
-    
-    const enabledProviders = Object.keys(config.providers).filter(key => {
-      const provider = config.providers[key as keyof typeof config.providers];
-      return provider?.enabled && provider?.apiKey;
+
+    const providers = config.providers || {};
+    const enabledProviders = Object.keys(providers).filter(key => {
+      const provider = providers[key as keyof typeof providers];
+      return provider?.enabled;
     });
-    
+
     if (enabledProviders.length === 0) {
+      spinner2.fail('No enabled providers found');
+      Logger.warn('Run "gitvibe config validate" to fix configuration issues');
+      return;
+    }
+
+    // Check if at least one provider has an API key
+    let hasApiKey = false;
+    for (const provider of enabledProviders) {
+      if (await configManager.hasApiKey(provider)) {
+        hasApiKey = true;
+        break;
+      }
+    }
+
+    if (!hasApiKey) {
       spinner2.fail('No enabled providers with API keys found');
       Logger.warn('Run "gitvibe config validate" to fix configuration issues');
       return;
     }
-    
+
     spinner2.succeed(`Configuration valid (${enabledProviders.length} providers enabled)`);
   } catch (error) {
     spinner2.fail('Configuration test failed');

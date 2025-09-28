@@ -2,11 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import chalk from 'chalk';
 import ora from 'ora';
-import { ConfigManager } from '../../core/config/manager.js';
-import { AIGenerator } from '../../core/ai/generator.js';
-import { GitAnalyzer } from '../../core/git/analyzer.js';
-import { Logger } from '../../utils/Logger.js';
-import { PROVIDERS } from '../../core/ai/providers.js';
+import { ConfigManager, AIGenerator, GitAnalyzer, Logger, PROVIDERS } from '@gitvibe/core';
 
 export function registerCommitCommand(program: Command): void {
   program
@@ -121,7 +117,7 @@ async function commitCommand(options: CommitOptions): Promise<void> {
   const selectedProvider = options.provider || config.defaultProvider;
   const selectedModel = options.model;
 
-  if (!aiGenerator.validateProvider(selectedProvider)) {
+  if (!selectedProvider || !aiGenerator.validateProvider(selectedProvider)) {
     throw new Error(`Invalid provider: ${selectedProvider}`);
   }
 
@@ -134,7 +130,7 @@ async function commitCommand(options: CommitOptions): Promise<void> {
     provider: selectedProvider,
     model: selectedModel,
     template: options.template,
-    stream: options.stream !== false && config.options.streaming,
+    stream: options.stream !== false && (config.options?.streaming ?? true),
   };
 
   let commitMessage: string;
