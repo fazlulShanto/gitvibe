@@ -179,21 +179,20 @@ The CLI stores configuration in `~/.gitvibe/config.yaml`. The configuration incl
 ```yaml
 providers:
     openai:
-        apiKey: "your-api-key" # Stored securely in system keychain
         defaultModel: "gpt-3.5-turbo"
         enabled: true
         customModels: ["gpt-4o", "gpt-4o-mini"] # Add new models not in the built-in list
     anthropic:
-        apiKey: "your-api-key"
         defaultModel: "claude-3-haiku-20240307"
         enabled: true
         customModels: []
     google:
-        apiKey: "your-api-key"
         defaultModel: "gemini-pro"
         enabled: true
         customModels: []
 ```
+
+**Note:** API keys are stored securely in the system keychain and are not included in the YAML configuration file.
 
 #### Dynamic Model Support
 

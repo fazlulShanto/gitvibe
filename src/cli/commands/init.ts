@@ -86,11 +86,13 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
       default: config.providers[provider as keyof typeof config.providers]?.defaultModel,
     }]);
 
-    // Update configuration
+    // Store API key in keychain
+    await configManager.setApiKey(provider, apiKey);
+
+    // Update configuration (without apiKey)
     const providerKey = provider as keyof typeof config.providers;
     config.providers[providerKey] = {
       ...config.providers[providerKey],
-      apiKey,
       defaultModel: model,
       enabled: true,
     };
@@ -149,8 +151,8 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
 
   // Configure additional options
   console.log(chalk.blue('\n⚙️ Additional Configuration...'));
-  
-  const { streaming, maxOutputTokens, temperature } = await inquirer.prompt([
+
+  const { streaming, maxOutputTokens, temperature, maxDiffSize, chunkOverlap } = await inquirer.prompt([
     {
       type: 'confirm',
       name: 'streaming',
@@ -171,9 +173,23 @@ async function initCommand(options: { force?: boolean; provider?: string }): Pro
       default: config.options.temperature,
       validate: (input) => input >= 0 && input <= 2 || 'Please enter a value between 0.0 and 2.0',
     },
+    {
+      type: 'number',
+      name: 'maxDiffSize',
+      message: 'Maximum diff size in characters before chunking:',
+      default: config.options.maxDiffSize,
+      validate: (input) => input > 0 || 'Please enter a positive number',
+    },
+    {
+      type: 'number',
+      name: 'chunkOverlap',
+      message: 'Overlap between chunks in characters:',
+      default: config.options.chunkOverlap,
+      validate: (input) => input >= 0 || 'Please enter a non-negative number',
+    },
   ]);
 
-  config.options = { streaming, maxOutputTokens, temperature };
+  config.options = { streaming, maxOutputTokens, temperature, maxDiffSize, chunkOverlap };
 
   // Git hooks configuration
   const { enableHooks } = await inquirer.prompt([{
