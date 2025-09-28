@@ -31,6 +31,11 @@ export const TemplatesConfigSchema = z.object({
   pr: z.object({
     default: z.string(),
     detailed: z.string(),
+    chunk_summary: z.string().default(`Summarize the changes in this portion of the git diff:
+
+{diff}
+
+Provide a concise summary of what this chunk of changes does. Focus on the key modifications, additions, or deletions.`),
     custom: z.record(z.string()).default({}),
   }),
 });
@@ -39,6 +44,8 @@ export const OptionsConfigSchema = z.object({
   streaming: z.boolean().default(true),
   maxOutputTokens: z.number().default(500),
   temperature: z.number().min(0).max(2).default(0.7),
+  maxDiffSize: z.number().default(50000), // Maximum diff size in characters before chunking
+  chunkOverlap: z.number().default(1000), // Overlap between chunks in characters
 });
 
 export const GitHooksConfigSchema = z.object({
