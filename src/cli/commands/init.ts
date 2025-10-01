@@ -113,10 +113,10 @@ export const initCommand: Command = new Command("init")
             pr_prompt: DEFAULT_PR_PROMPT,
             merge_commit_prompt: DEFAULT_MERGE_COMMIT_PROMPT,
             temperature: 0.7,
-            max_commit_tokens: 300,
-            max_pr_tokens: 6000,
+            max_commit_tokens: 1 * 1024,
+            max_pr_tokens: 64 * 1024,
             stream_output: true,
-            commit_variations: 2,
+            commit_variations: 1,
         };
 
         await ConfigManager.saveConfig("default", config);

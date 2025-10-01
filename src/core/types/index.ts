@@ -41,8 +41,7 @@ export const GitDiffSchema = z.object({
 export type GitDiff = z.infer<typeof GitDiffSchema>;
 
 export const CommitMessageSchema = z.object({
-    message: z.string(),
-    variations: z.array(z.string()).optional(),
+    variations: z.array(z.string()).min(1),
 });
 
 export type CommitMessage = z.infer<typeof CommitMessageSchema>;

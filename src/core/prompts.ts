@@ -1,9 +1,6 @@
-export const DEFAULT_COMMIT_PROMPT = `Analyze the following git changes and generate a single, complete conventional commit message.
-
-CHANGES SUMMARY:
-\${compactSummary}
-
-\${snippets ? \`\nCODE CONTEXT:\n\${snippets}\n\` : ''}
+export const DEFAULT_COMMIT_PROMPT = `Analyze the following git changes and generate {n_commit} complete conventional commit message.
+GIT DIFF:
+{diff}
 
 TASK: Write ONE conventional commit message that accurately describes what was changed.
 
@@ -34,7 +31,23 @@ WRONG FORMAT (do not use):
 - feat(auth): add user login
 - refactor(commit): improve prompts
 
-Return only the commit message line, no explanations.`;
+Return exaclty {n_commit} commit message/s in following JSON Schema format:
+
+{
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1
+    }
+  },
+  "required": ["results"],
+  "additionalProperties": false
+}
+`;
 
 export const DEFAULT_PR_PROMPT = `Analyze the following commits and generate a comprehensive PR title and description.
 
@@ -66,12 +79,16 @@ PR TITLE GUIDELINES:
 
 Return only the formatted PR content, no additional explanations.`;
 
-export const DEFAULT_MERGE_COMMIT_PROMPT = `You have been given multiple commit messages generated from different chunks of a large git diff. Your task is to merge them into a single, cohesive conventional commit message.
+export const DEFAULT_MERGE_COMMIT_PROMPT = `You have been given multiple commit messages generated from different chunks of a large git diff.
+Your task is to merge them into precious, cohesive conventional commit message.
+you have to ensure that the final commit message accurately reflects all the changes described in the individual messages.
 
-COMMIT MESSAGES FROM CHUNKS:
+create {n_commit} commit variations of the merged commit message.
+
+INPUT (COMMIT MESSAGES FROM CHUNKS):
 {messages}
 
-TASK: Create ONE conventional commit message that encompasses all the changes described in these messages.
+TASK: Create {n_commit} variations of conventional commit message/s that encompasses all the changes described in these indivudual commit Chunks.
 
 REQUIREMENTS:
 - Format: type: subject (NO scope, just type and subject)
@@ -92,4 +109,21 @@ EXAMPLES:
 - refactor: improve code structure with modular components and better error handling
 - fix: resolve multiple bugs in data processing and validation
 
-Return only the commit message line, no explanations.`;
+IMPORTANT:
+Always Return exaclty in the following JSON Schema format. no markdown formatting, no additional explanations, no text, no comments, just the JSON:
+{
+  "type": "object",
+  "properties": {
+    "results": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "minItems": {n_commit}
+    }
+  },
+  "required": ["results"],
+  "additionalProperties": false
+}
+
+`;

@@ -4,6 +4,7 @@ import clipboardy from "clipboardy";
 import { ConfigManager } from "../../core/config";
 import { AIService } from "../../core/ai";
 import { GitService } from "../../core/git";
+import { GitAnalyzer } from "../../core/git/analyzer";
 
 export const commitCommand: Command = new Command("commit")
     .alias("c")
@@ -13,20 +14,15 @@ export const commitCommand: Command = new Command("commit")
     .option("--config <name>", "Use specific config")
     .action(async (options) => {
         const git = new GitService();
-
+        // check if in a git repo
         if (!(await git.isGitRepo())) {
             console.error("Not a git repository.");
             process.exit(1);
         }
 
-        const diff = await git.getStagedDiff();
-        if (!diff) {
-            console.log("No staged changes found.");
-            return;
-        }
-
         const configName =
             options.config || (await ConfigManager.getDefaultConfigName());
+
         if (!configName) {
             console.error(
                 'No default configuration found. Run "gitvibe init" first.'
@@ -35,52 +31,42 @@ export const commitCommand: Command = new Command("commit")
         }
 
         const config = await ConfigManager.getConfig(configName);
+
         if (!config) {
             console.error(`Configuration "${configName}" not found.`);
             process.exit(1);
         }
 
-        const chunks = await git.chunkDiff(diff);
-        let message: string;
+        const diff = await git.getStagedDiff();
 
-        // For variations > 1, disable streaming to get multiple messages
-        const generationConfig =
-            config.commit_variations > 1
-                ? { ...config, stream_output: false }
-                : config;
+        if (!diff) {
+            console.log("No staged changes found.");
+            return;
+        }
 
-        const result = await AIService.generateCommitMessage(
-            chunks[0],
-            generationConfig,
-            config.commit_variations
+        const result = await AIService.generateCommitMessage(diff, config);
+
+        // Multiple variations, let user select
+        const variations = result.variations!;
+        console.log(
+            `✨🎉 Generated ${variations.length} commit message variations:`
         );
 
-        if (config.commit_variations === 1) {
-            message = result.message;
-            if (!config.stream_output) {
-                console.log("\n 🎉Generated message:");
-                console.log(message);
-            }
-        } else {
-            // Multiple variations, let user select
-            const variations = result.variations!;
-            console.log(
-                `\n🎉 Generated ${config.commit_variations} commit message variations:`
-            );
+        const selectionAnswer = await inquirer.prompt([
+            {
+                type: "list",
+                name: "selectedIndex",
+                message: "Select a commit message:",
+                choices: Array.isArray(variations)
+                    ? variations.map((variation, index) => ({
+                          name: variation,
+                          value: index,
+                      }))
+                    : [],
+            },
+        ]);
 
-            const selectionAnswer = await inquirer.prompt([
-                {
-                    type: "list",
-                    name: "selectedIndex",
-                    message: "Select a commit message:",
-                    choices: variations.map((variation, index) => ({
-                        name: variation,
-                        value: index,
-                    })),
-                },
-            ]);
-            message = variations[selectionAnswer.selectedIndex];
-        }
+        let message = variations[selectionAnswer.selectedIndex];
 
         let action: string;
         if (options.copy) action = "copy";
