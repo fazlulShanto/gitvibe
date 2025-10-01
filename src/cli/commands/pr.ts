@@ -85,14 +85,23 @@ export const prCommand: Command = new Command("pr")
                     break;
                 case "open":
                     try {
+                        // Escape quotes and special characters for shell command
+                        const escapedTitle = result.title
+                            .replace(/"/g, '\\"')
+                            .replace(/'/g, "\\'");
+                        const escapedDescription = result.description
+                            .replace(/"/g, '\\"')
+                            .replace(/'/g, "\\'");
+
                         // Create PR with gh CLI
-                        const cmd = `gh pr create --title "${result.title}" --body "${result.description}"`;
+                        const cmd = `gh pr create --title "${escapedTitle}" --body "${escapedDescription}"`;
                         execSync(cmd, { stdio: "inherit" });
                         console.log("✅ PR created successfully.");
                     } catch (error) {
                         console.error(
                             "Failed to create PR. Make sure GitHub CLI is installed and authenticated."
                         );
+                        console.error("Error details:", error);
                     }
                     break;
             }
