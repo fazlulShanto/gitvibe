@@ -2,6 +2,10 @@ import { Command } from "commander";
 import inquirer from "inquirer";
 import clipboardy from "clipboardy";
 import { execSync } from "child_process";
+import fs from "fs";
+import path from "path";
+import os from "os";
+import crypto from "crypto";
 import { ConfigManager } from "../../core/config";
 import { AIService } from "../../core/ai";
 import { GitService } from "../../core/git";
@@ -85,17 +89,25 @@ export const prCommand: Command = new Command("pr")
                     break;
                 case "open":
                     try {
-                        // Escape quotes and special characters for shell command
+                        // Escape title for shell command
                         const escapedTitle = result.title
                             .replace(/"/g, '\\"')
                             .replace(/'/g, "\\'");
-                        const escapedDescription = result.description
-                            .replace(/"/g, '\\"')
-                            .replace(/'/g, "\\'");
 
-                        // Create PR with gh CLI
-                        const cmd = `gh pr create --title "${escapedTitle}" --body "${escapedDescription}"`;
+                        // Create temp file for description
+                        const tempFile = path.join(
+                            os.tmpdir(),
+                            `pr-body-${crypto.randomUUID()}.md`
+                        );
+                        fs.writeFileSync(tempFile, result.description);
+
+                        // Create PR with gh CLI using temp file
+                        const cmd = `gh pr create --title "${escapedTitle}" --body-file "${tempFile}"`;
                         execSync(cmd, { stdio: "inherit" });
+
+                        // Clean up temp file
+                        fs.unlinkSync(tempFile);
+
                         console.log("✅ PR created successfully.");
                     } catch (error) {
                         console.error(
