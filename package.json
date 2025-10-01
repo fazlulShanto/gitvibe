@@ -1,13 +1,46 @@
 {
   "name": "gitvibe",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "AI-powered CLI tool for generating commit messages and PR descriptions",
+  "main": "dist/index.js",
+  "bin": {
+    "gitvibe": "bin/gitvibe.js"
+  },
   "scripts": {
+    "build": "tsc --outDir dist --declaration",
+    "dev": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "cli",
+    "git",
+    "ai",
+    "commit",
+    "pr"
+  ],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.11.0"
+  "packageManager": "pnpm@10.11.0",
+  "dependencies": {
+    "@ai-sdk/anthropic": "^2.0.22",
+    "@ai-sdk/google": "^2.0.17",
+    "@ai-sdk/groq": "^2.0.22",
+    "@ai-sdk/openai": "^2.0.42",
+    "ai": "^5.0.59",
+    "clipboardy": "^4.0.0",
+    "commander": "^14.0.1",
+    "inquirer": "^12.9.6",
+    "js-yaml": "^4.1.0",
+    "keytar": "^7.9.0",
+    "open-editor": "^5.1.0",
+    "simple-git": "^3.28.0",
+    "yaml": "^2.8.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.19.19",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
 }
