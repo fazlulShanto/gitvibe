@@ -49,15 +49,14 @@ Return exaclty {n_commit} commit message/s in following JSON Schema format:
 }
 `;
 
-export const DEFAULT_PR_PROMPT = `Analyze the following commits and generate a comprehensive PR title and description.
+export const DEFAULT_PR_PROMPT = `Analyze the following git diff and generate a comprehensive PR title and description.
 
-COMMITS:
+COMMIT DIFFS:
 {commits}
 
-TASK: Create a PR title and description that summarizes the changes.
 
 REQUIREMENTS:
-- Title: Concise, descriptive, follows conventional format (type: description)
+- Title: Concise, descriptive, follows conventional format
 - Description: Detailed explanation of changes, impact, and any breaking changes
 - Format as:
 # Title
@@ -67,15 +66,10 @@ Description
 Include:
 - What was changed
 - Why it was changed
-- How it affects users/developers
+- User stories (if applicable)
+- important details
+- Impact on existing functionality
 - Any breaking changes or migration notes
-
-PR TITLE GUIDELINES:
-- feat: New features
-- fix: Bug fixes
-- refactor: Code restructuring
-- docs: Documentation
-- chore: Maintenance
 
 Return only the formatted PR content, no additional explanations.`;
 

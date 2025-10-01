@@ -5,19 +5,12 @@ import {
 } from "@ai-sdk/google";
 import { AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import { createGroq, GroqProvider } from "@ai-sdk/groq";
-import { generateText, LanguageModel, Provider, streamText } from "ai";
+import { generateText, streamText } from "ai";
 import { z } from "zod";
-import {
-    Config,
-    AIProvider,
-    CommitMessage,
-    PRDescription,
-    GitDiff,
-} from "../types";
+import { Config, AIProvider, CommitMessage, PRDescription } from "../types";
 import { ConfigManager } from "../config";
 import { GitService } from "../git";
 import { Logger } from "../utils/logger";
-import { is } from "zod/v4/locales";
 
 const CommitMessageSchema = z.object({
     results: z.array(z.string()).min(1),
