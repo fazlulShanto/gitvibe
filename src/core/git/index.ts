@@ -21,6 +21,26 @@ export class GitService {
         return log.all.map((commit) => commit.message);
     }
 
+    async getLastNCommitDiffs(n: number) {
+        try {
+            // Get the last N commits' hashes
+            const log = await this.git.log({ n });
+            const commits = log.all;
+
+            const diffs = [];
+
+            for (const commit of commits) {
+                // Get the diff for this commit
+                const diff = await this.git.show([commit.hash]);
+                diffs.push(diff);
+            }
+
+            return diffs;
+        } catch (err) {
+            console.error("Error fetching commit diffs:", err);
+        }
+    }
+
     async getDiffSummary(diff: string): Promise<GitDiff> {
         const lines = diff.split("\n");
         const files: GitDiff["files"] = [];
