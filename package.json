@@ -1,44 +1,13 @@
 {
-  "name": "gitvibe-monorepo",
+  "name": "gitvibe",
   "version": "1.0.0",
-  "description": "AI-powered monorepo for GitVibe tools (CLI, Web GUI, Server)",
-  "private": true,
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "test": "turbo test",
-    "test:run": "turbo test:run",
-    "check-types": "turbo check-types",
-    "clean": "turbo clean",
-    "cli": "pnpm --filter @gitvibe/cli",
-    "web": "pnpm --filter @gitvibe/web-gui",
-    "server": "pnpm --filter @gitvibe/server"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [
-    "monorepo",
-    "cli",
-    "git",
-    "commit",
-    "pr",
-    "ai",
-    "github",
-    "commit-message",
-    "pull-request",
-    "llm",
-    "openai",
-    "anthropic",
-    "google",
-    "react",
-    "web",
-    "server"
-  ],
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.12.1",
-  "devDependencies": {
-    "turbo": "^2.5.8"
-  },
-  "engines": {
-    "node": ">=20.19.0"
-  }
+  "packageManager": "pnpm@10.11.0"
 }
