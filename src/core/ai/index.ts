@@ -5,12 +5,11 @@ import {
 } from "@ai-sdk/google";
 import { AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import { createGroq, GroqProvider } from "@ai-sdk/groq";
-import { generateText, streamText } from "ai";
+import { generateObject, generateText, streamText } from "ai";
 import { z } from "zod";
 import { Config, AIProvider, CommitMessage, PRDescription } from "../types";
 import { ConfigManager } from "../config";
 import { GitService } from "../git";
-import { Logger } from "../utils/logger";
 
 const CommitMessageSchema = z.object({
     results: z.array(z.string()).min(1),
@@ -50,45 +49,26 @@ export class AIService {
                 n_commit: config.commit_variations.toString(),
             });
 
-            const result = await generateText({
+            const result = await generateObject({
                 model: client(config.model),
+                schema: CommitMessageSchema,
                 prompt: chunkPrompt,
             });
-            try {
-                const parsed = CommitMessageSchema.safeParse(
-                    JSON.parse(result.text)
-                );
-                if (parsed.success) {
-                    chunkMessages.push(...parsed.data.results);
-                }
-                chunkMessages.push(result.text.trim());
-            } catch {
-                console.log("Got in a chunk error 🟥", result.text);
-            }
+
+            chunkMessages.push(...result.object.results);
         }
 
         const mergePrompt = this.buildPrompt(config.merge_commit_prompt, {
             messages: chunkMessages.map((msg) => `- ${msg}`).join("\n"),
         });
 
-        const finalResult = await generateText({
+        const finalResult = await generateObject({
             model: client(config.model),
+            schema: CommitMessageSchema,
             prompt: mergePrompt,
-            maxOutputTokens: config.max_commit_tokens,
         });
 
-        try {
-            if (
-                CommitMessageSchema.safeParse(JSON.parse(finalResult.text))
-                    .success
-            ) {
-                return JSON.parse(finalResult.text);
-            }
-            throw new Error("Invalid final commit message format");
-        } catch {
-            Logger.error("Failed to parse final commit message JSON.");
-            throw new Error("Failed to parse final commit message JSON.");
-        }
+        return finalResult.object;
     }
 
     private static async handleSmallDiff(
@@ -105,21 +85,12 @@ export class AIService {
             n_commit: config.commit_variations.toString(),
         });
 
-        const { text: result } = await generateText({
+        const { object } = await generateObject({
             model: client(config.model),
+            schema: CommitMessageSchema,
             prompt,
-            maxOutputTokens: config.max_commit_tokens,
         });
-
-        try {
-            if (CommitMessageSchema.safeParse(JSON.parse(result)).success) {
-                return JSON.parse(result);
-            }
-            throw new Error("Invalid commit message format");
-        } catch {
-            Logger.error("Failed to parse commit message JSON.");
-            throw new Error("Failed to parse commit message JSON.");
-        }
+        return object;
     }
 
     private static buildPrompt(
@@ -147,7 +118,7 @@ export class AIService {
         const client = this.getClient(config.ai_provider, apiKey);
         const gitService = this.getGitService();
 
-        const isSmallDif = diff.length < 50 * 1000;
+        const isSmallDif = diff.length < 30 * 1000;
 
         let finalResult: z.infer<typeof CommitMessageSchema>;
 
@@ -181,38 +152,23 @@ export class AIService {
         const client = this.getClient(config.ai_provider, apiKey);
 
         const commitsText = commits.join("\n");
+
         const prompt = config.pr_prompt.replace("{commits}", commitsText);
 
-        let text: string;
+        // Use non-streaming
+        const result = await generateObject({
+            model: client(config.model),
+            schema: z.object({
+                title: z.string(),
+                description: z.string(),
+            }),
+            prompt,
+        });
 
-        if (config.stream_output) {
-            // Use streaming
-            const result = await streamText({
-                model: client(config.model),
-                prompt,
-            });
-
-            text = "";
-            for await (const chunk of result.textStream) {
-                text += chunk;
-                process.stdout.write(chunk);
-            }
-            process.stdout.write("\n");
-        } else {
-            // Use non-streaming
-            const result = await generateText({
-                model: client(config.model),
-                prompt,
-            });
-            text = result.text;
-        }
-
-        // Parse the result to extract title and description
-        const lines = text.split("\n");
-        const title = lines[0].replace(/^#+\s*/, "").trim();
-        const description = lines.slice(1).join("\n").trim();
-
-        return { title, description };
+        return {
+            title: result.object.title,
+            description: result.object.description,
+        };
     }
 
     static async testConnection(config: Config): Promise<boolean> {

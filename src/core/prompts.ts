@@ -30,26 +30,9 @@ EXAMPLES (correct format - NO scope, just type and subject):
 WRONG FORMAT (do not use):
 - feat(auth): add user login
 - refactor(commit): improve prompts
-
-Return exaclty {n_commit} commit message/s in following JSON Schema format:
-
-{
-  "type": "object",
-  "properties": {
-    "results": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": 1
-    }
-  },
-  "required": ["results"],
-  "additionalProperties": false
-}
 `;
 
-export const DEFAULT_PR_PROMPT = `Analyze the following git diff and generate a comprehensive PR title and description.
+export const DEFAULT_PR_PROMPT = `I am about to open a github PR, please Analyze the following git diff and generate a comprehensive PR title and description.
 
 COMMIT DIFFS:
 {commits}
@@ -69,9 +52,7 @@ Include:
 - User stories (if applicable)
 - important details
 - Impact on existing functionality
-- Any breaking changes or migration notes
-
-Return only the formatted PR content, no additional explanations.`;
+`;
 
 export const DEFAULT_MERGE_COMMIT_PROMPT = `You have been given multiple commit messages generated from different chunks of a large git diff.
 Your task is to merge them into precious, cohesive conventional commit message.
@@ -102,22 +83,4 @@ EXAMPLES:
 - feat: add user authentication and profile management system
 - refactor: improve code structure with modular components and better error handling
 - fix: resolve multiple bugs in data processing and validation
-
-IMPORTANT:
-Always Return exaclty in the following JSON Schema format. no markdown formatting, no additional explanations, no text, no comments, just the JSON:
-{
-  "type": "object",
-  "properties": {
-    "results": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      },
-      "minItems": {n_commit}
-    }
-  },
-  "required": ["results"],
-  "additionalProperties": false
-}
-
 `;
