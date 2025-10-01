@@ -9,7 +9,7 @@
   "scripts": {
     "build": "tsc --outDir dist --declaration",
     "dev": "tsx src/index.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest --run"
   },
   "keywords": [
     "cli",
@@ -40,7 +40,9 @@
   "devDependencies": {
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^20.19.19",
+    "@vitest/ui": "^3.2.4",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
   }
 }
