@@ -3,6 +3,11 @@ import inquirer from "inquirer";
 import { AIProvider, Config } from "../../core/types";
 import { ConfigManager } from "../../core/config";
 import { AIService } from "../../core/ai";
+import {
+    DEFAULT_COMMIT_PROMPT,
+    DEFAULT_PR_PROMPT,
+    DEFAULT_MERGE_COMMIT_PROMPT,
+} from "../../core/prompts";
 
 const PROVIDER_MODELS: Record<AIProvider, string[]> = {
     openai: ["gpt-5-mini", "gpt-4o-mini", "gpt-5-nano", "gpt-5"],
@@ -34,28 +39,46 @@ export const initCommand: Command = new Command("init")
             "Welcome to gitvibe! Let's set up your AI configuration.\n"
         );
 
-        const answers = await inquirer.prompt([
-            {
+        // Step 1: Select provider
+        const { provider } = await inquirer.prompt({
+            type: "list",
+            name: "provider",
+            message: "Select AI provider:",
+            choices: [
+                { name: "Groq (default)", value: "groq" },
+                { name: "OpenAI", value: "openai" },
+                { name: "Google", value: "google" },
+                { name: "Anthropic", value: "anthropic" },
+            ],
+            default: "groq",
+        });
+
+        // Step 2: Check for existing API key
+        const existingApiKey = await ConfigManager.getApiKey(provider);
+        let useExisting = false;
+        if (existingApiKey) {
+            const { action } = await inquirer.prompt({
                 type: "list",
-                name: "provider",
-                message: "Select AI provider:",
+                name: "action",
+                message: `API key found for ${provider}. What would you like to do?`,
                 choices: [
-                    { name: "Groq (default)", value: "groq" },
-                    { name: "OpenAI", value: "openai" },
-                    { name: "Google", value: "google" },
-                    { name: "Anthropic", value: "anthropic" },
+                    { name: "Use existing key", value: "use" },
+                    { name: "Enter new key", value: "new" },
                 ],
-                default: "groq",
-            },
+            });
+            useExisting = action === "use";
+        }
+
+        // Step 3: Get model and API key if needed
+        const modelAnswers = await inquirer.prompt([
             {
                 type: "list",
                 name: "model",
                 message: "Select model:",
-                choices: (answers: any) => [
-                    ...PROVIDER_MODELS[answers.provider as AIProvider],
+                choices: [
+                    ...PROVIDER_MODELS[provider as AIProvider],
                     "Custom Model",
                 ],
-                when: (answers: any) => answers.provider,
             },
             {
                 type: "input",
@@ -69,15 +92,15 @@ export const initCommand: Command = new Command("init")
                 message: "Enter API key:",
                 validate: (input: string) =>
                     input.length > 0 || "API key is required",
+                when: () => !useExisting,
             },
         ]);
 
-        const provider: AIProvider = answers.provider;
         const model =
-            answers.model === "Custom Model"
-                ? answers.customModel
-                : answers.model;
-        const apiKey = answers.apiKey;
+            modelAnswers.model === "Custom Model"
+                ? modelAnswers.customModel
+                : modelAnswers.model;
+        const apiKey = useExisting ? existingApiKey : modelAnswers.apiKey;
 
         // Store API key
         await ConfigManager.setApiKey(provider, apiKey);
@@ -86,10 +109,9 @@ export const initCommand: Command = new Command("init")
         const config: Config = {
             ai_provider: provider,
             model,
-            commit_prompt:
-                "Generate a concise commit message for the following git diff:\n\n{diff}\n\nCommit message:",
-            pr_prompt:
-                "Generate a PR title and description for the following commits:\n\n{commits}\n\nFormat as:\n# Title\n\nDescription",
+            commit_prompt: DEFAULT_COMMIT_PROMPT,
+            pr_prompt: DEFAULT_PR_PROMPT,
+            merge_commit_prompt: DEFAULT_MERGE_COMMIT_PROMPT,
             temperature: 0.7,
             max_commit_tokens: 300,
             max_pr_tokens: 6000,
