@@ -53,11 +53,9 @@ export const prCommand: Command = new Command("pr")
             config
         );
 
-        if (!config.stream_output) {
-            console.log("\nGenerated PR:");
-            console.log(`Title: ${result.title}`);
-            console.log(`Description:\n${result.description}`);
-        }
+        console.log("\nGenerated PR:");
+        console.log(`Title: ${result.title}`);
+        console.log(`Description:\n${result.description}`);
 
         const actions = [];
         if (options.copy) actions.push("copy");
@@ -88,13 +86,7 @@ export const prCommand: Command = new Command("pr")
                 case "open":
                     try {
                         // Create PR with gh CLI
-                        const cmd = `gh pr create --title "${result.title.replace(
-                            /"/g,
-                            '\\"'
-                        )}" --body "${result.description.replace(
-                            /"/g,
-                            '\\"'
-                        )}"`;
+                        const cmd = `gh pr create --title "${result.title}" --body "${result.description}"`;
                         execSync(cmd, { stdio: "inherit" });
                         console.log("✅ PR created successfully.");
                     } catch (error) {
