@@ -176,6 +176,7 @@ export class AIService {
             await this.generateCommitMessage("test diff", config);
             return true;
         } catch (error) {
+            console.error("Connection test failed:", error);
             return false;
         }
     }

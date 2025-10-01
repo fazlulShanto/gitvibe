@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc --outDir dist --declaration",
     "dev": "tsx src/index.ts",
-    "test": "vitest --run"
+    "test": "vitest --run",
+    "test:ui": "vitest --ui"
   },
   "keywords": [
     "cli",
