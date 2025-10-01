@@ -6,12 +6,11 @@ import { AIService } from "../../core/ai";
 import { GitService } from "../../core/git";
 
 export const commitCommand: Command = new Command("commit")
+    .alias("c")
     .description("Generate commit message from staged changes")
     .option("--copy", "Copy to clipboard")
-    .option("--edit", "Edit the message")
     .option("--commit", "Commit with the message")
     .option("--config <name>", "Use specific config")
-    .alias("c")
     .action(async (options) => {
         const git = new GitService();
 
@@ -41,75 +40,74 @@ export const commitCommand: Command = new Command("commit")
             process.exit(1);
         }
 
-        console.log("Generating commit message...");
-
         const chunks = await git.chunkDiff(diff);
         let message: string;
 
-        if (chunks.length === 1) {
-            const result = await AIService.generateCommitMessage(
-                chunks[0],
-                config,
-                1
-            );
+        // For variations > 1, disable streaming to get multiple messages
+        const generationConfig =
+            config.commit_variations > 1
+                ? { ...config, stream_output: false }
+                : config;
+
+        const result = await AIService.generateCommitMessage(
+            chunks[0],
+            generationConfig,
+            config.commit_variations
+        );
+
+        if (config.commit_variations === 1) {
             message = result.message;
+            if (!config.stream_output) {
+                console.log("\n 🎉Generated message:");
+                console.log(message);
+            }
         } else {
-            // For multiple chunks, generate for first chunk as representative
-            const result = await AIService.generateCommitMessage(
-                chunks[0],
-                config,
-                1
+            // Multiple variations, let user select
+            const variations = result.variations!;
+            console.log(
+                `\n🎉 Generated ${config.commit_variations} commit message variations:`
             );
-            message = result.message;
+
+            const selectionAnswer = await inquirer.prompt([
+                {
+                    type: "list",
+                    name: "selectedIndex",
+                    message: "Select a commit message:",
+                    choices: variations.map((variation, index) => ({
+                        name: variation,
+                        value: index,
+                    })),
+                },
+            ]);
+            message = variations[selectionAnswer.selectedIndex];
         }
 
-        if (!config.stream_output) {
-            console.log("\nGenerated message:");
-            console.log(message);
-        }
-
-        const actions = [];
-        if (options.copy) actions.push("copy");
-        if (options.edit) actions.push("edit");
-        if (options.commit) actions.push("commit");
-
-        if (actions.length === 0) {
+        let action: string;
+        if (options.copy) action = "copy";
+        else if (options.commit) action = "commit";
+        else {
             const answer = await inquirer.prompt([
                 {
-                    type: "checkbox",
-                    name: "actions",
+                    type: "list",
+                    name: "action",
                     message: "What would you like to do?",
                     choices: [
-                        { name: "Copy to clipboard", value: "copy" },
-                        { name: "Edit message", value: "edit" },
                         { name: "Commit with this message", value: "commit" },
+                        { name: "Copy to clipboard", value: "copy" },
                     ],
                 },
             ]);
-            actions.push(...answer.actions);
+            action = answer.action;
         }
 
-        for (const action of actions) {
-            switch (action) {
-                case "copy":
-                    await clipboardy.write(message);
-                    console.log("Copied to clipboard.");
-                    break;
-                case "edit":
-                    const editAnswer = await inquirer.prompt([
-                        {
-                            type: "editor",
-                            name: "message",
-                            message: "Edit the commit message:",
-                            default: message,
-                        },
-                    ]);
-                    message = editAnswer.message.trim();
-                    break;
-                case "commit":
-                    await git.commit(message);
-                    console.log("Committed successfully.");
-                    break;
-            }
+        switch (action) {
+            case "copy":
+                await clipboardy.write(message);
+                console.log("✅ Copied to clipboard.");
+                break;
+            case "commit":
+                await git.commit(message);
+                console.log("✅ Committed successfully.");
+                break;
         }
     });
