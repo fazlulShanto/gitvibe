@@ -654,6 +654,7 @@ gitvibe c --copy
     ```
 
 3. **Customize prompts**
+
     ```yaml
     commit_prompt: |
         Generate a commit message following our team conventions:
@@ -994,7 +995,5 @@ gitvibe c --copy && git commit  # paste and edit
 -   📖 **Conventional Commits**: https://www.conventionalcommits.org/
 
 ---
-
-**Made with ❤️ by the GitVibe team**
 
 _Last updated: 2025-10-02_

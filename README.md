@@ -19,8 +19,9 @@ AI-powered CLI tool for generating commit messages and PR descriptions. Streamli
 -   Node.js 20.19.0+ (check with `node --version`)
 -   Git repository
 -   API key for your chosen AI provider
+-   github CLI (for PR)
 
-### Install via npm
+### Install via npm (Recommended)
 
 ```bash
 npm install -g gitvibe
@@ -32,17 +33,11 @@ npm install -g gitvibe
 pnpm add -g gitvibe --ignore-scripts=false
 ```
 
-### Build from source
-
-```bash
-git clone https://github.com/your-repo/gitvibe.git
-cd gitvibe
-pnpm install
-pnpm build
-npm link
-```
-
 ## Quick Start
+
+> # You can use [Groq free tier ](https://console.groq.com/docs/rate-limits)unless your git diff is really big.
+
+Personally I use `moonshotai/kimi-k2-instruct-0905` model. Hence it's defualt choice in the cli.
 
 1. **Initialize GitVibe**:
 
@@ -180,57 +175,6 @@ Set the default configuration.
 gitvibe config set-default my-config
 ```
 
-## Configuration
-
-Configurations are stored as YAML files in `~/.gitvibe/configs/`. Each config includes:
-
--   **AI Provider**: `openai`, `google`, `anthropic`, or `groq`
--   **Model**: Specific model name (varies by provider)
--   **Prompts**: Custom templates for commits and PRs
--   **Temperature**: AI creativity level (0.0-2.0)
--   **Token Limits**: Maximum tokens for commit/PR generation
--   **Stream Output**: Whether to stream AI responses
--   **Commit Variations**: Number of suggestions to generate
-
-### Default Prompts
-
-GitVibe uses intelligent prompts that follow conventional commit standards:
-
-**Commit Prompt**: Analyzes git diffs and generates conventional commit messages like:
-
--   `feat: add user login with OAuth integration`
--   `fix: resolve memory leak in image processing`
--   `refactor: improve code structure with better error handling`
-
-**PR Prompt**: Creates comprehensive PR descriptions including:
-
--   Clear title
--   Detailed description of changes
--   Impact assessment
--   Breaking changes (if any)
-
-## Supported AI Providers
-
-### Groq (Default)
-
--   Fast and cost-effective
--   Models: llama-3.1-8b-instant, deepseek-r1-distill-llama-70b, etc.
-
-### OpenAI
-
--   Industry standard
--   Models: gpt-4o-mini, gpt-4o, gpt-5-mini, etc.
-
-### Google (Gemini)
-
--   Google's AI models
--   Models: gemini-2.0-flash, gemini-2.5-pro, etc.
-
-### Anthropic (Claude)
-
--   Focus on safety and reasoning
--   Models: claude-3-5-sonnet, claude-4-sonnet, etc.
-
 ## Examples
 
 ### Complete Workflow
@@ -275,49 +219,8 @@ echo "quick fix" | git commit -F -
 gitvibe commit --commit
 ```
 
-## Troubleshooting
-
-### Common Issues
-
-**"Not a git repository"**
-
--   Ensure you're in a Git repository
--   Check with `git status`
-
-**"No default configuration found"**
-
--   Run `gitvibe init` to set up
--   Or specify config with `--config <name>`
-
-**"API key not found"**
-
--   Re-run `gitvibe init` to update API key
--   Check API key validity with your provider
-
-**"Failed to create PR"**
-
--   Install GitHub CLI: `gh auth login`
--   Ensure you're in a GitHub repository
-
-### Configuration Issues
-
--   Use `gitvibe config list` to see available configs
--   Use `gitvibe config show` to inspect config details
--   Edit config files directly in `~/.gitvibe/configs/`
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test with `gitvibe commit` and `gitvibe pr`
-5. Submit a pull request
-
 ## License
 
-ISC License - see LICENSE file for details.
+MIT License - see LICENSE file for details.
 
-## Support
-
--   GitHub Issues: Report bugs and request features
--   Documentation: This README and inline help (`gitvibe --help`)
+[Command Reference](./CLI_GUIDE.md)
