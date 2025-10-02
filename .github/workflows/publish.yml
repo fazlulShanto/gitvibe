@@ -8,9 +8,9 @@ on:
 jobs:
     build:
         runs-on: ubuntu-22.04
-        strategy:
-            matrix:
-                node-version: [20.19.0]
+        # strategy:
+        #     matrix:
+        #         node-version: [20.19.0]
 
         steps:
             - name: Checkout to repository
@@ -22,18 +22,13 @@ jobs:
               uses: actions/setup-node@v4
               with:
                   node-version: "20.19.0" # Or your desired Node.js version
+                  registry-url: https://registry.npmjs.org
                   cache: "pnpm"
 
             - name: Install pnpm
               uses: pnpm/action-setup@v4
               with:
                   version: 10
-
-            # - name: Use Node.js ${{ matrix.node-version }}
-            #   uses: actions/setup-node@v4
-            #   with:
-            #       node-version: ${{ matrix.node-version }}
-            #       cache: "pnpm"
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
