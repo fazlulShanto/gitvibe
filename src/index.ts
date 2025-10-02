@@ -13,7 +13,7 @@ program
     .description(
         "AI-powered CLI tool for generating commit messages and PR descriptions"
     )
-    .version("1.0.0");
+    .version("1.2.1");
 
 program.addCommand(initCommand);
 program.addCommand(configCommand);
