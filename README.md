@@ -224,3 +224,7 @@ gitvibe commit --commit
 MIT License - see LICENSE file for details.
 
 [Command Reference](./CLI_GUIDE.md)
+
+# Inspiration
+
+-   https://github.com/KartikLabhshetwar/lazycommit
