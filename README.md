@@ -29,7 +29,7 @@ npm install -g gitvibe
 ### Install via pnpm
 
 ```bash
-pnpm add -g gitvibe
+pnpm add -g gitvibe --ignore-scripts=false
 ```
 
 ### Build from source
@@ -146,7 +146,7 @@ Manage configuration profiles.
 
 Create a new configuration file. Opens your default editor to customize:
 
--   AI provider and model
+-   AI provider and model ( Groq with Kimi-k2 model is suggested)
 -   Custom prompts
 -   Temperature and token limits
 -   Output streaming preferences
