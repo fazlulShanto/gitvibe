@@ -1,6 +1,6 @@
 {
     "name": "gitvibe",
-    "version": "1.3.1",
+    "version": "1.3.2",
     "description": "AI-powered CLI tool for generating commit messages and PR descriptions",
     "main": "dist/index.js",
     "scripts": {
