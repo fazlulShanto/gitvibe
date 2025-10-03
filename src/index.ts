@@ -5,6 +5,7 @@ import { initCommand } from "./cli/commands/init";
 import { configCommand } from "./cli/commands/config";
 import { commitCommand } from "./cli/commands/commit";
 import { prCommand } from "./cli/commands/pr";
+import { version } from "../package.json";
 
 const program = new Command();
 
@@ -13,7 +14,7 @@ program
     .description(
         "AI-powered CLI tool for generating commit messages and PR descriptions"
     )
-    .version("1.2.1");
+    .version(version);
 
 program.addCommand(initCommand);
 program.addCommand(configCommand);
