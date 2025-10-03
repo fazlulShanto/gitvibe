@@ -14,6 +14,7 @@ export const ConfigSchema = z.object({
     commit_prompt: z.string(),
     pr_prompt: z.string(),
     merge_commit_prompt: z.string(),
+    merge_pr_prompt: z.string(),
     temperature: z.number().min(0).max(2),
     max_commit_tokens: z.number().int().positive(),
     max_pr_tokens: z.number().int().positive(),

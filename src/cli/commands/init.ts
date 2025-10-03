@@ -7,6 +7,7 @@ import {
     DEFAULT_COMMIT_PROMPT,
     DEFAULT_PR_PROMPT,
     DEFAULT_MERGE_COMMIT_PROMPT,
+    DEFAULT_MERGE_PR_PROMPT,
 } from "../../core/prompts";
 
 const PROVIDER_MODELS: Record<AIProvider, string[]> = {
@@ -111,6 +112,7 @@ export const initCommand: Command = new Command("init")
             commit_prompt: DEFAULT_COMMIT_PROMPT,
             pr_prompt: DEFAULT_PR_PROMPT,
             merge_commit_prompt: DEFAULT_MERGE_COMMIT_PROMPT,
+            merge_pr_prompt: DEFAULT_MERGE_PR_PROMPT,
             temperature: 0.7,
             max_commit_tokens: 1 * 1024,
             max_pr_tokens: 64 * 1024,

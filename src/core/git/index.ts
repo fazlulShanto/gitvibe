@@ -181,6 +181,47 @@ export class GitService {
         return this.analyzer.chunkDiffString(diffString, perChunkSize);
     }
 
+    chunkCommits(
+        commits: string[],
+        maxChunkSize: number = 20 * 1000
+    ): string[][] {
+        const chunks: string[][] = [];
+        let currentChunk: string[] = [];
+        let currentSize = 0;
+
+        for (const commit of commits) {
+            let commitParts: string[];
+            if (commit.length > maxChunkSize) {
+                // Split large commits by lines
+                commitParts = commit.split("\n");
+            } else {
+                commitParts = [commit];
+            }
+
+            for (const part of commitParts) {
+                const partSize = part.length + 1; // +1 for newline
+
+                if (
+                    currentSize + partSize > maxChunkSize &&
+                    currentChunk.length > 0
+                ) {
+                    chunks.push(currentChunk);
+                    currentChunk = [];
+                    currentSize = 0;
+                }
+
+                currentChunk.push(part);
+                currentSize += partSize;
+            }
+        }
+
+        if (currentChunk.length > 0) {
+            chunks.push(currentChunk);
+        }
+
+        return chunks;
+    }
+
     async commit(message: string): Promise<void> {
         await this.git.commit(message);
     }

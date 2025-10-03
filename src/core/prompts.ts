@@ -84,3 +84,29 @@ EXAMPLES:
 - refactor: improve code structure with modular components and better error handling
 - fix: resolve multiple bugs in data processing and validation
 `;
+
+export const DEFAULT_MERGE_PR_PROMPT = `You have been given multiple PR descriptions generated from different chunks of commits.
+Your task is to merge them into a single, cohesive PR title and description that encompasses all the changes described in the individual PR descriptions.
+
+INPUT (PR DESCRIPTIONS FROM CHUNKS):
+{pr_descriptions}
+
+TASK: Create a single PR title and description that combines all the changes from these chunked PR descriptions.
+
+REQUIREMENTS:
+- Title: Concise, descriptive, follows conventional format
+- Description: Detailed explanation of all changes, impact, and any breaking changes
+- Format as:
+# Title
+
+Description
+
+Include:
+- What was changed (combine from all chunks)
+- Why it was changed
+- User stories (if applicable)
+- Important details
+- Impact on existing functionality
+
+Ensure the final PR description is comprehensive but not redundant.
+`;

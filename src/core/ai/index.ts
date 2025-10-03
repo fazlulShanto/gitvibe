@@ -7,7 +7,13 @@ import { AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import { createGroq, GroqProvider } from "@ai-sdk/groq";
 import { generateObject, generateText, streamText } from "ai";
 import { z } from "zod";
-import { Config, AIProvider, CommitMessage, PRDescription } from "../types";
+import {
+    Config,
+    AIProvider,
+    CommitMessage,
+    PRDescription,
+    PRDescriptionSchema,
+} from "../types";
 import { ConfigManager } from "../config";
 import { GitService } from "../git";
 
@@ -93,6 +99,48 @@ export class AIService {
         return object;
     }
 
+    private static async handleLargeCommits(
+        commits: string[],
+        config: Config,
+        client: any,
+        gitService: GitService
+    ): Promise<z.infer<typeof PRDescriptionSchema>> {
+        const chunks = gitService.chunkCommits(commits, 5000);
+        const chunkPRs: string[] = [];
+
+        for (const chunk of chunks) {
+            const chunkCommitsText = chunk.join("\n");
+            // const chunkPrompt = config.pr_prompt.replace(
+            //     "{commits}",
+            //     chunkCommitsText
+            // );
+
+            const result = await generateObject({
+                model: client(config.model),
+                schema: PRDescriptionSchema,
+                prompt:
+                    "Summurize the following git diff changes:\n\n" +
+                    chunkCommitsText,
+            });
+
+            chunkPRs.push(
+                `Title: ${result.object.title}\nDescription: ${result.object.description}`
+            );
+        }
+
+        const mergePrompt = this.buildPrompt(config.merge_pr_prompt, {
+            pr_descriptions: chunkPRs.join("\n\n---\n\n"),
+        });
+
+        const finalResult = await generateObject({
+            model: client(config.model),
+            schema: PRDescriptionSchema,
+            prompt: mergePrompt,
+        });
+
+        return finalResult.object;
+    }
+
     private static buildPrompt(
         template: string,
         replacements: { [key: string]: string }
@@ -122,7 +170,10 @@ export class AIService {
 
         let finalResult: z.infer<typeof CommitMessageSchema>;
 
-        if (isSmallDif) {
+        if (!isSmallDif) {
+            console.log(
+                "🚧 Large diff detected. This may take a few extra seconds..."
+            );
             finalResult = await this.handleLargeDiff(
                 diff,
                 config,
@@ -137,7 +188,6 @@ export class AIService {
             variations: isValidResult.success ? finalResult.results : [],
         };
     }
-
     static async generatePRDescription(
         commits: string[],
         config: Config
@@ -150,27 +200,41 @@ export class AIService {
         }
 
         const client = this.getClient(config.ai_provider, apiKey);
+        const gitService = this.getGitService();
 
         const commitsText = commits.join("\n");
 
-        const prompt = config.pr_prompt.replace("{commits}", commitsText);
+        const isLargeCommits = commitsText.length > 30 * 1000;
 
-        // Use non-streaming
-        const result = await generateObject({
-            model: client(config.model),
-            schema: z.object({
-                title: z.string(),
-                description: z.string(),
-            }),
-            prompt,
-        });
+        let finalResult: z.infer<typeof PRDescriptionSchema>;
+
+        if (!isLargeCommits) {
+            const prompt = config.pr_prompt.replace("{commits}", commitsText);
+
+            const result = await generateObject({
+                model: client(config.model),
+                schema: PRDescriptionSchema,
+                prompt,
+            });
+
+            finalResult = result.object;
+        } else {
+            console.log(
+                "🚧 Large commits detected. This may take a few extra seconds..."
+            );
+            finalResult = await this.handleLargeCommits(
+                commits,
+                config,
+                client,
+                gitService
+            );
+        }
 
         return {
-            title: result.object.title,
-            description: result.object.description,
+            title: finalResult.title,
+            description: finalResult.description,
         };
     }
-
     static async testConnection(config: Config): Promise<boolean> {
         try {
             await this.generateCommitMessage("test diff", config);

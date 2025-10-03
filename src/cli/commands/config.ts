@@ -12,7 +12,10 @@ import {
 } from "fs";
 import { Config } from "../../core/types";
 import { ConfigManager } from "../../core/config";
-import { DEFAULT_MERGE_COMMIT_PROMPT } from "../../core/prompts";
+import {
+    DEFAULT_MERGE_COMMIT_PROMPT,
+    DEFAULT_MERGE_PR_PROMPT,
+} from "../../core/prompts";
 
 export const configCommand: Command = new Command("config");
 
@@ -64,6 +67,7 @@ const newCommand: Command = new Command("new")
             pr_prompt:
                 "Generate a PR title and description for the following commits:\n\n{commits}\n\nFormat as:\n# Title\n\nDescription",
             merge_commit_prompt: DEFAULT_MERGE_COMMIT_PROMPT,
+            merge_pr_prompt: DEFAULT_MERGE_PR_PROMPT,
             temperature: 0.7,
             max_commit_tokens: 150,
             max_pr_tokens: 500,
