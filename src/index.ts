@@ -50,8 +50,11 @@ process.on("uncaughtException", (error) => {
     }
 });
 
-process.on("unhandledRejection", (reason, promise) => {
-    console.error("👋 See you next time!");
+process.on("unhandledRejection", (reason: any) => {
+    console.error(
+        "🟥",
+        reason?.data?.error?.message || reason?.name || "See you next time!"
+    );
     process.exit(1);
 });
 
