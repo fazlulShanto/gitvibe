@@ -13,8 +13,56 @@ export interface GitChangeInfo {
 export class GitAnalyzer {
     private git: SimpleGit;
 
+    // Lock files to exclude from diffs sent to AI
+    private static readonly LOCK_FILE_PATTERNS = [
+        "package-lock.json",
+        "yarn.lock",
+        "pnpm-lock.yaml",
+        "bun.lockb",
+        "requirements.txt.lock",
+        "poetry.lock",
+        "Pipfile.lock",
+        "uv.lock",
+        "Gemfile.lock",
+        "composer.lock",
+        "Cargo.lock",
+        "go.sum",
+        "Podfile.lock",
+        "pubspec.lock",
+        "packages.lock.json",
+    ];
+
     constructor(workingDir?: string) {
         this.git = simpleGit(workingDir || process.cwd());
+    }
+
+    private shouldExcludeFile(filename: string): boolean {
+        return GitAnalyzer.LOCK_FILE_PATTERNS.some(
+            (pattern) =>
+                filename.endsWith(pattern) || filename.includes(`/${pattern}`)
+        );
+    }
+
+    private filterDiff(diff: string): string {
+        // Split diff into file chunks
+        const diffParts = diff.split(/^diff --git /m);
+
+        // Filter out lock files
+        const filteredParts = diffParts.filter((part) => {
+            if (!part.trim()) return true; // Keep empty parts
+
+            // Extract filename from diff header
+            const match = part.match(/^a\/(.+?) b\//);
+            if (!match) return true;
+
+            const filename = match[1];
+            return !this.shouldExcludeFile(filename);
+        });
+
+        // Rejoin the diff
+        return filteredParts
+            .map((part, idx) => (idx === 0 ? part : `diff --git ${part}`))
+            .join("");
     }
 
     public async isGitRepository(): Promise<boolean> {
@@ -32,6 +80,9 @@ export class GitAnalyzer {
             const diff = await this.git.diff(["--cached"]);
             const diffStat = await this.git.diffSummary(["--cached"]);
 
+            // Filter out lock files from diff
+            const filteredDiff = this.filterDiff(diff);
+
             return {
                 files: [
                     ...status.staged,
@@ -40,7 +91,7 @@ export class GitAnalyzer {
                 ],
                 additions: diffStat.insertions,
                 deletions: diffStat.deletions,
-                diff: diff,
+                diff: filteredDiff,
                 branch: status.current || "unknown",
                 staged: true,
             };
@@ -58,11 +109,14 @@ export class GitAnalyzer {
             const diff = await this.git.diff();
             const diffStat = await this.git.diffSummary();
 
+            // Filter out lock files from diff
+            const filteredDiff = this.filterDiff(diff);
+
             return {
                 files: [...status.modified, ...status.not_added],
                 additions: diffStat.insertions,
                 deletions: diffStat.deletions,
-                diff: diff,
+                diff: filteredDiff,
                 branch: status.current || "unknown",
                 staged: false,
             };
@@ -80,11 +134,14 @@ export class GitAnalyzer {
             const diff = await this.git.diff(["HEAD"]);
             const diffStat = await this.git.diffSummary(["HEAD"]);
 
+            // Filter out lock files from diff
+            const filteredDiff = this.filterDiff(diff);
+
             return {
                 files: [...status.files.map((f) => f.path)],
                 additions: diffStat.insertions,
                 deletions: diffStat.deletions,
-                diff: diff,
+                diff: filteredDiff,
                 branch: status.current || "unknown",
                 staged: false,
             };
@@ -120,11 +177,14 @@ export class GitAnalyzer {
                 .split("\n")
                 .filter((file) => file.trim());
 
+            // Filter out lock files from diff
+            const filteredDiff = this.filterDiff(diff);
+
             return {
                 files,
                 additions: diffStat.insertions,
                 deletions: diffStat.deletions,
-                diff,
+                diff: filteredDiff,
                 branch: currentBranch,
                 staged: false,
             };
