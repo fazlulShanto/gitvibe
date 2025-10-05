@@ -11,6 +11,7 @@ A comprehensive guide to using GitVibe's command-line interface for AI-powered c
     -   [gitvibe commit (c)](#gitvibe-commit-c)
     -   [gitvibe pr](#gitvibe-pr)
     -   [gitvibe config](#gitvibe-config)
+    -   [gitvibe create-config](#gitvibe-create-config)
 -   [Command Options](#command-options)
 -   [Workflow Examples](#workflow-examples)
 -   [Tips & Best Practices](#tips--best-practices)
@@ -38,12 +39,13 @@ This interactive command will:
 
 ### Quick Command Reference
 
-| Command          | Alias | Purpose                 | Common Usage          |
-| ---------------- | ----- | ----------------------- | --------------------- |
-| `gitvibe init`   | -     | Setup AI provider       | `gitvibe init`        |
-| `gitvibe commit` | `c`   | Generate commit message | `gitvibe c --commit`  |
-| `gitvibe pr`     | -     | Generate PR description | `gitvibe pr --open`   |
-| `gitvibe config` | -     | Manage configurations   | `gitvibe config list` |
+| Command                 | Alias | Purpose                     | Common Usage                      |
+| ----------------------- | ----- | --------------------------- | --------------------------------- |
+| `gitvibe init`          | -     | Setup AI provider           | `gitvibe init`                    |
+| `gitvibe commit`        | `c`   | Generate commit message     | `gitvibe c --commit`              |
+| `gitvibe pr`            | -     | Generate PR description     | `gitvibe pr --open`               |
+| `gitvibe config`        | -     | Manage configurations       | `gitvibe config list`             |
+| `gitvibe create-config` | -     | Create config interactively | `gitvibe create-config my-config` |
 
 ---
 
@@ -451,6 +453,62 @@ gitvibe c --commit
 # Override for one command
 gitvibe c --commit --config personal
 ```
+
+---
+
+### gitvibe create-config
+
+**Purpose:** Create a new configuration interactively with guided prompts
+
+**Usage:**
+
+```bash
+gitvibe create-config <name>
+```
+
+**What it does:**
+
+-   🤖 Guides you through selecting an AI provider (Groq, OpenAI, Google, Anthropic, Zai)
+-   🎨 Lets you choose from available models or enter a custom one
+-   🌡️ Prompts for temperature setting (0.0-1.0)
+-   🔑 Handles API key input or reuse of existing keys
+-   ✅ Tests the configuration with a connection check
+-   📝 Saves the config and opens it in your default editor for final adjustments
+-   🧪 Validates the final configuration
+
+**Interactive Prompts:**
+
+1. **Select AI provider** - Choose from available providers
+2. **API key handling** - Use existing key or enter new one
+3. **Select model** - Pick from provider models or custom
+4. **Custom model** - If chosen, enter model name
+5. **Temperature** - Set creativity level
+6. **API key input** - Enter key if needed
+
+**Example Session:**
+
+```
+$ gitvibe create-config work-config
+
+Let's set up your AI configuration.
+
+? Select AI provider: Groq (default)
+? API key found for groq. What would you like to do? Use existing key
+? Select model: llama3-8b-8192
+? Enter temperature (0.0 to 1.0): 0.5
+
+Testing configuration...
+✅ Configuration tested successfully.
+
+Opening nano to edit configuration...
+Configuration "work-config" saved.
+```
+
+**When to use:**
+
+-   Creating a new config with interactive guidance
+-   When you prefer prompts over direct editor editing
+-   Setting up configs for different projects or preferences
 
 ---
 

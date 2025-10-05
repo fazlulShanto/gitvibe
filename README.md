@@ -175,6 +175,14 @@ Set the default configuration.
 gitvibe config set-default my-config
 ```
 
+### `gitvibe create-config <name>`
+
+Create a new configuration interactively. This command guides you through selecting an AI provider, model, temperature, and API key, then tests the configuration and opens it in your editor for customization.
+
+```bash
+gitvibe create-config my-config
+```
+
 ## Examples
 
 ### Complete Workflow
