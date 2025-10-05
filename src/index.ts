@@ -54,10 +54,18 @@ process.on("uncaughtException", (error) => {
 });
 
 process.on("unhandledRejection", (reason: any) => {
+    if (reason?.data?.error?.message) {
+        console.error("🟥", reason?.data?.error?.message);
+    }
+    if (reason?.name === "ExitPromptError") {
+        console.log("\n🟥 Stopping as per user request...");
+        process.exit(0);
+    }
+
     console.error(
-        "🟥",
-        reason?.data?.error?.message || reason?.name || "See you next time!"
+        "⚠️ An error occurred. Please report this issue on our GitHub repository for assistance."
     );
+
     process.exit(1);
 });
 
