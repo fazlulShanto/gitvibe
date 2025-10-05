@@ -56,7 +56,7 @@ export const commitCommand: Command = new Command("commit")
             {
                 type: "list",
                 name: "selectedIndex",
-                message: "Select a commit message:",
+                message: `Select a commit message (config: ${configName}):`,
                 choices: Array.isArray(variations)
                     ? variations.map((variation, index) => ({
                           name: variation,

@@ -5,7 +5,7 @@ import {
 } from "@ai-sdk/google";
 import { AnthropicProvider, createAnthropic } from "@ai-sdk/anthropic";
 import { createGroq, GroqProvider } from "@ai-sdk/groq";
-import { generateObject, generateText, streamText } from "ai";
+import { generateObject } from "ai";
 import { z } from "zod";
 import {
     Config,
@@ -16,6 +16,7 @@ import {
 } from "../types";
 import { ConfigManager } from "../config";
 import { GitService } from "../git";
+import { OpenAICompatibleProvider } from "@ai-sdk/openai-compatible";
 
 const CommitMessageSchema = z.object({
     results: z.array(z.string()).min(1),

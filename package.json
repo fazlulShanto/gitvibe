@@ -28,6 +28,7 @@
         "@ai-sdk/google": "^2.0.17",
         "@ai-sdk/groq": "^2.0.22",
         "@ai-sdk/openai": "^2.0.42",
+        "@ai-sdk/openai-compatible": "^1.0.19",
         "ai": "^5.0.59",
         "clipboardy": "^4.0.0",
         "commander": "^14.0.1",

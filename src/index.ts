@@ -3,6 +3,7 @@
 import { Command } from "commander";
 import { initCommand } from "./cli/commands/init";
 import { configCommand } from "./cli/commands/config";
+import { createConfigCommand } from "./cli/commands/create-config";
 import { commitCommand } from "./cli/commands/commit";
 import { prCommand } from "./cli/commands/pr";
 import { version } from "../package.json";
@@ -18,6 +19,7 @@ program
 
 program.addCommand(initCommand);
 program.addCommand(configCommand);
+program.addCommand(createConfigCommand);
 program.addCommand(commitCommand);
 program.addCommand(prCommand);
 

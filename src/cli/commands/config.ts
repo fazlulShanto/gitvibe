@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import inquirer from "inquirer";
+import jsYml from "js-yaml";
 import { execSync } from "child_process";
 import { platform, homedir } from "os";
 import { join } from "path";
@@ -75,7 +75,7 @@ const newCommand: Command = new Command("new")
             commit_variations: 2,
         };
 
-        const yamlContent = require("js-yaml").dump(defaultConfig);
+        const yamlContent = jsYml.dump(defaultConfig);
         writeFileSync(configFile, yamlContent);
 
         console.log(`Opening ${editor} to edit configuration...`);

@@ -10,7 +10,7 @@ import {
     DEFAULT_MERGE_PR_PROMPT,
 } from "../../core/prompts";
 
-const PROVIDER_MODELS: Record<AIProvider, string[]> = {
+export const PROVIDER_MODELS: Record<AIProvider, string[]> = {
     openai: ["gpt-5-mini", "gpt-4o-mini", "gpt-5-nano", "gpt-5"],
     google: [
         "gemini-2.0-flash-lite",
@@ -49,6 +49,7 @@ export const initCommand: Command = new Command("init")
                 { name: "OpenAI", value: "openai" },
                 { name: "Google", value: "google" },
                 { name: "Anthropic", value: "anthropic" },
+                { name: "Zai", value: "zai" },
             ],
             default: "groq",
         });
@@ -113,7 +114,7 @@ export const initCommand: Command = new Command("init")
             pr_prompt: DEFAULT_PR_PROMPT,
             merge_commit_prompt: DEFAULT_MERGE_COMMIT_PROMPT,
             merge_pr_prompt: DEFAULT_MERGE_PR_PROMPT,
-            temperature: 0.7,
+            temperature: 0.5,
             max_commit_tokens: 1 * 1024,
             max_pr_tokens: 64 * 1024,
             stream_output: true,

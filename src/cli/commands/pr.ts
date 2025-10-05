@@ -50,7 +50,9 @@ export const prCommand: Command = new Command("pr")
             process.exit(1);
         }
 
-        console.log(`⏳︎ Generating PR description from last ${n} commits...`);
+        console.log(
+            `⏳︎ Generating PR description (config: ${configName}) from last ${n} commits...`
+        );
 
         const result = await AIService.generatePRDescription(
             commitDiffs,
