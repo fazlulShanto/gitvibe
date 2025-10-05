@@ -16,10 +16,9 @@ import {
 } from "../types";
 import { ConfigManager } from "../config";
 import { GitService } from "../git";
-import { OpenAICompatibleProvider } from "@ai-sdk/openai-compatible";
 
 const CommitMessageSchema = z.object({
-    results: z.array(z.string()).min(1),
+    results: z.array(z.string()).min(1).max(120),
 });
 
 export class AIService {
