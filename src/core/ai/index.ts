@@ -59,6 +59,7 @@ export class AIService {
                 model: client(config.model),
                 schema: CommitMessageSchema,
                 prompt: chunkPrompt,
+                temperature: Number(config?.temperature) || 0.5,
             });
 
             chunkMessages.push(...result.object.results);
@@ -72,6 +73,7 @@ export class AIService {
             model: client(config.model),
             schema: CommitMessageSchema,
             prompt: mergePrompt,
+            temperature: Number(config?.temperature) || 0.5,
         });
 
         return finalResult.object;
@@ -95,6 +97,7 @@ export class AIService {
             model: client(config.model),
             schema: CommitMessageSchema,
             prompt,
+            temperature: Number(config?.temperature) || 0.5,
         });
         return object;
     }
@@ -118,6 +121,7 @@ export class AIService {
             const result = await generateObject({
                 model: client(config.model),
                 schema: PRDescriptionSchema,
+                temperature: Number(config?.temperature) || 0.5,
                 prompt:
                     "Summurize the following git diff changes:\n\n" +
                     chunkCommitsText,
@@ -136,6 +140,7 @@ export class AIService {
             model: client(config.model),
             schema: PRDescriptionSchema,
             prompt: mergePrompt,
+            temperature: Number(config?.temperature) || 0.5,
         });
 
         return finalResult.object;
@@ -215,6 +220,7 @@ export class AIService {
                 model: client(config.model),
                 schema: PRDescriptionSchema,
                 prompt,
+                temperature: Number(config?.temperature) || 0.5,
             });
 
             finalResult = result.object;
