@@ -42,7 +42,7 @@ This interactive command will:
 | Command                 | Alias | Purpose                     | Common Usage                      |
 | ----------------------- | ----- | --------------------------- | --------------------------------- |
 | `gitvibe init`          | -     | Setup AI provider           | `gitvibe init`                    |
-| `gitvibe commit`        | `c`   | Generate commit message     | `gitvibe c --commit`              |
+| `gitvibe commit`        | `c`   | Generate commit message     | `gitvibe c --apply`               |
 | `gitvibe pr`            | -     | Generate PR description     | `gitvibe pr --open`               |
 | `gitvibe config`        | -     | Manage configurations       | `gitvibe config list`             |
 | `gitvibe create-config` | -     | Create config interactively | `gitvibe create-config my-config` |
@@ -58,7 +58,7 @@ This interactive command will:
 git add .
 
 # 2. Generate and commit (shorthand)
-gitvibe c --commit
+gitvibe c --apply
 
 # 3. Push changes
 git push
@@ -134,7 +134,7 @@ gitvibe c [options]      # Short alias
 | Option            | Description                           | Example                   |
 | ----------------- | ------------------------------------- | ------------------------- |
 | `--copy`          | Copy selected message to clipboard    | `gitvibe c --copy`        |
-| `--commit`        | Commit directly with selected message | `gitvibe c --commit`      |
+| `--apply`         | Commit directly with selected message | `gitvibe c --apply`       |
 | `--config <name>` | Use specific configuration profile    | `gitvibe c --config work` |
 
 **How it works:**
@@ -170,14 +170,14 @@ gitvibe commit --copy
 gitvibe c --copy
 
 # Commit directly without prompts
-gitvibe commit --commit
-gitvibe c --commit
+gitvibe commit --apply
+gitvibe c --apply
 
 # Use specific configuration
 gitvibe commit --config my-custom-config
 
 # Combine options
-gitvibe c --commit --config work
+gitvibe c --apply --config work
 ```
 
 **Interactive Flow:**
@@ -448,10 +448,10 @@ gitvibe config set-default work
 gitvibe config set-default work
 
 # Now all commands use it
-gitvibe c --commit
+gitvibe c --apply
 
 # Override for one command
-gitvibe c --commit --config personal
+gitvibe c --apply --config personal
 ```
 
 ---
@@ -531,7 +531,7 @@ These work with any command:
 | Option            | Short | Type  | Description               |
 | ----------------- | ----- | ----- | ------------------------- |
 | `--copy`          | -     | flag  | Copy message to clipboard |
-| `--commit`        | -     | flag  | Commit automatically      |
+| `--apply`         | -     | flag  | Commit automatically      |
 | `--config <name>` | -     | value | Use specific config       |
 
 #### pr
@@ -554,7 +554,7 @@ These work with any command:
 git add .
 
 # Generate and commit in one command
-gitvibe c --commit
+gitvibe c --apply
 ```
 
 ### Example 2: Review Before Committing
@@ -587,11 +587,11 @@ git checkout -b feature/user-auth
 
 # Make changes and commit
 git add .
-gitvibe c --commit
+gitvibe c --apply
 
 # Make more changes
 git add .
-gitvibe c --commit
+gitvibe c --apply
 
 # Push and create PR
 git push origin feature/user-auth
@@ -614,7 +614,7 @@ gitvibe config new personal-casual
 gitvibe config set-default personal-casual
 
 # Use specific config
-gitvibe c --commit --config work-strict
+gitvibe c --apply --config work-strict
 ```
 
 ### Example 6: Experimental AI Models
@@ -644,7 +644,7 @@ gitvibe c --copy
     ```bash
     # Good: Stage related files
     git add src/auth.ts src/auth.test.ts
-    gitvibe c --commit
+    gitvibe c --apply
 
     # Avoid: Mixing unrelated changes
     git add src/auth.ts src/ui.css src/database.ts
@@ -924,10 +924,10 @@ git diff --cached
 
 ```bash
 # Quick workflow
-git add . && gitvibe c --commit && git push
+git add . && gitvibe c --apply && git push
 
 # Commit and PR in one go
-git add . && gitvibe c --commit && gitvibe pr --open
+git add . && gitvibe c --apply && gitvibe pr --open
 ```
 
 ### Shell Aliases
@@ -936,13 +936,13 @@ Add to your `~/.bashrc` or `~/.zshrc`:
 
 ```bash
 # Quick commit
-alias gvc='git add . && gitvibe c --commit'
+alias gvc='git add . && gitvibe c --apply'
 
 # Quick PR
 alias gvpr='gitvibe pr --open'
 
 # Commit with specific config
-alias gvw='gitvibe c --commit --config work'
+alias gvw='gitvibe c --apply --config work'
 ```
 
 ### Git Hooks Integration
@@ -1022,22 +1022,22 @@ commit_variations: 1 # Number of commit message options
 
 ### Essential Commands
 
-| Task             | Command                   | Shortcut             |
-| ---------------- | ------------------------- | -------------------- |
-| **Setup**        | `gitvibe init`            | -                    |
-| **Quick commit** | `gitvibe commit --commit` | `gitvibe c --commit` |
-| **Copy message** | `gitvibe commit --copy`   | `gitvibe c --copy`   |
-| **Create PR**    | `gitvibe pr --open`       | -                    |
-| **List configs** | `gitvibe config list`     | -                    |
+| Task             | Command                  | Shortcut            |
+| ---------------- | ------------------------ | ------------------- |
+| **Setup**        | `gitvibe init`           | -                   |
+| **Quick commit** | `gitvibe commit --apply` | `gitvibe c --apply` |
+| **Copy message** | `gitvibe commit --copy`  | `gitvibe c --copy`  |
+| **Create PR**    | `gitvibe pr --open`      | -                   |
+| **List configs** | `gitvibe config list`    | -                   |
 
 ### Common Workflows
 
 ```bash
 # Daily workflow
-git add . && gitvibe c --commit
+git add . && gitvibe c --apply
 
 # Feature branch
-gitvibe c --commit && git push && gitvibe pr --open
+gitvibe c --apply && git push && gitvibe pr --open
 
 # Review first
 gitvibe c --copy && git commit  # paste and edit

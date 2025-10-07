@@ -85,7 +85,7 @@ Generate commit messages from staged changes.
 **Options:**
 
 -   `--copy`: Copy the selected message to clipboard
--   `--commit`: Commit directly with the selected message
+-   `--apply`: Commit directly with the selected message
 -   `--config <name>`: Use a specific configuration
 
 **Examples:**
@@ -98,7 +98,7 @@ gitvibe commit
 gitvibe commit --copy
 
 # Commit directly
-gitvibe commit --commit
+gitvibe commit --apply
 
 # Use specific config
 gitvibe commit --config my-config
@@ -195,7 +195,7 @@ gitvibe init
 git add .
 
 # 3. Generate and commit
-gitvibe commit --commit # gitvibe c
+gitvibe commit --apply # gitvibe c
 
 # 4. Push and create PR
 git push origin feature-branch
@@ -224,7 +224,7 @@ gitvibe pr --commits 5 --copy
 # Quick commit without interaction
 echo "quick fix" | git commit -F -
 # Or use GitVibe for better messages
-gitvibe commit --commit
+gitvibe commit --apply
 ```
 
 ## License

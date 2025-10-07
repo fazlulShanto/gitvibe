@@ -10,7 +10,7 @@ export const commitCommand: Command = new Command("commit")
     .alias("c")
     .description("Generate commit message from staged changes")
     .option("--copy", "Copy to clipboard")
-    .option("--commit", "Commit with the message")
+    .option("--apply", "Commit with the message")
     .option("--config <name>", "Use specific config")
     .action(async (options) => {
         const git = new GitService();
@@ -70,7 +70,7 @@ export const commitCommand: Command = new Command("commit")
 
         let action: string;
         if (options.copy) action = "copy";
-        else if (options.commit) action = "commit";
+        else if (options.apply) action = "commit";
         else {
             const answer = await inquirer.prompt([
                 {
